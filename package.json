@@ -1,0 +1,19 @@
+{
+  "name": "momondo-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index",
+    "dev": "nodemon -e ts -w src -x 'npm run start'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.3.0",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.1.3"
+  }
+}
