@@ -30,8 +30,11 @@ interface ViewModel {
     CityId: number;
     CountryISO: string;
     CountryId: number;
-    DisplayNames: 
-    {Name: "Waikiki", GeoHierarchyName: "Honolulu (HI)", CategoryName: "Area"}
+    DisplayNames: {
+        Name: string;
+        GeoHierarchyName: string;
+        CategoryName: string;
+    }
     ExternalTypeID: number;
     FormattedNoOfHotels: string;
     HasImage: boolean;

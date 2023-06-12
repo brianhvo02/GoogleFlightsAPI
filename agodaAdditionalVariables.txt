@@ -471,3 +471,235 @@ AreaSearchRequest: {
         ]
     }
 }
+
+ContentImagesRequest: {
+    imageSizes: [
+        {
+            key: "main",
+            size: {
+                width: 1024,
+                height: 768
+            }
+        },
+        {
+            key: "gallery_preview",
+            size: {
+                width: 450,
+                height: 450
+            }
+        },
+        {
+            key: "thumbnail",
+            size: {
+                width: 80,
+                height: 60
+            }
+        },
+        {
+            key: "thumbnail-2x",
+            size: {
+                width: 160,
+                height: 120
+            }
+        }
+    ],
+    isApo: false,
+    isUseNewImageCaption: true
+}
+
+contentImages(ContentImagesRequest: $ContentImagesRequest) {
+    hotelImages {
+        caption
+        groupEntityId
+        groupId
+        id
+        providerId
+        typeId
+        uploadedDate
+        highResolutionSizes
+        urls {
+            key
+            value
+        }
+    }
+    videos {
+        id
+        location
+    }
+    matterports {
+        id
+        orderId
+        roomTypeId
+        thumbnailUrl
+        url
+    }
+}
+
+ContentReviewSummariesRequest: {
+    providerIds: [
+        332,
+        3038,
+        27901,
+        28999,
+        29100,
+        27999,
+        27980,
+        27989,
+        29014
+    ],
+    occupancyRequest: {
+        numberOfAdults: 2,
+        numberOfChildren: 0,
+        travelerType: 1,
+        lengthOfStay: 2,
+        checkIn: "2023-07-12T07:00:00.000Z"
+    },
+    contentReviewPositiveMentionsRequest: {
+        facilityClassesLimit: 3,
+        facilityClassesSentimentLimit: 3
+    },
+    contentReviewSnippetsRequest: {
+        overrideLimit: 20
+    },
+    isApo: false
+}
+
+contentReviewSummaries(ContentReviewSummariesRequest: $ContentReviewSummariesRequest) {
+    snippets {
+        snippetId
+        countryCode
+        countryId
+        countryName
+        date
+        demographicId
+        demographicName
+        reviewer
+        reviewRating
+        snippet
+        topics {
+            score
+            topicId
+        }
+    }
+    recommendationScores {
+        frequentTravellerRecommendationScore
+        recommendationScore
+    }
+    positiveMentions {
+        categories {
+            id
+            name
+            score
+        }
+        facilityClassesSentiment {
+            facilityIds
+            id
+            name
+            noOfPositiveMentioned
+        }
+        facilityClasses {
+            facilityIds
+            id
+            name
+            noOfMentioned
+        }
+    }
+}
+
+ContentReviewScoreRequest: {
+    demographics: {
+        filter: {
+            defaultProviderOnly: true
+        }
+    },
+    providerIds: []
+}
+
+contentReviewScore(ContentReviewScoreRequest: $ContentReviewScoreRequest) {
+    combinedReviewScore {
+        cumulative {
+            maxScore
+            reviewCount
+            score
+        }
+    }
+    providerReviewScore {
+        isDefault
+        providerId
+        trendingScore {
+            past14DaysUplift
+            past30DaysUplift
+        }
+        cumulative {
+            maxScore
+            reviewCount
+            score
+        }
+        demographics {
+            allGuest {
+                id
+                scoreDistribution {
+                    id
+                    reviewCount
+                }
+                reviewCount
+                grades {
+                    id
+                    score
+                    cityAverage
+                    subGrades {
+                        score
+                        name
+                    }
+                }
+            }
+        }
+    }
+    thirdPartyReviewScore {
+        providerId
+        grades {
+            id
+            score
+        }
+    }
+}
+
+ContentInformationSummaryRequest: {
+    isApo: false
+}
+
+ContentHighlightsRequest: {
+    includeAtfPropertyHighlights: true,
+    maxNumberOfItems: 5,
+    occupancyRequest: {
+        numberOfAdults: 2,
+        numberOfChildren: 0,
+        travelerType: 1
+    },
+    images: {
+        imageSizes: [
+            {
+                key: "main",
+                size: {
+                    width: 360,
+                    height: 270
+                }
+            }
+        ]
+    }
+}
+
+ContentInformationRequest: {
+    isApo: false,
+    characteristicTopicsLimit: 3
+}
+
+PriceStreamMetaLabRequest: {
+    attributesId: [
+        8,
+        2,
+        3,
+        7,
+        18
+    ]
+}

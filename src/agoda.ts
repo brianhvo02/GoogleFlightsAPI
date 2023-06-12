@@ -1,5 +1,7 @@
-import AreaSearch, { AreaSearchResult } from './types/agoda/AreaSearch';
+import { AreaSearchResult } from './types/agoda/AreaSearch';
 import LocationSearchResult from './types/agoda/LocationSearchResult';
+import { PropertyDetailsSearchResult } from './types/agoda/PropertyDetailsSearch';
+import { SecondaryData } from './types/agoda/SecondaryData';
 import { checkDepArrDates } from './utils';
 
 export const AgodaLocationSearch = async (searchText: string): Promise<LocationSearchResult> => {
@@ -24,7 +26,7 @@ export interface AgodaSearchParams {
 	children?: number;
 }
 
-const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
+export const AgodaSearch = async (params: AgodaSearchParams) => {
 	const {
 		cityId, areaId, 
 		checkIn: localCheckInDate, 
@@ -56,13 +58,15 @@ const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
                         searchCriteria: {
                             isAllowBookOnRequest: true,
                             bookingDate,
-                            checkInDate,
-                            localCheckInDate,
-                            los: 2,
-                            rooms,
-                            adults,
-                            children,
-                            childAges: [],
+                            itineraryCriteria: {
+								checkInDate,
+								// localCheckInDate,
+								los: 2,
+								rooms,
+								adults,
+								children,
+								childAges: [],
+							},
                             ratePlans: [],
                             isUserLoggedIn: false,
                             currency,
@@ -89,9 +93,12 @@ const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
                         forceExperimentsByIdNew: [],
                     },
                     summary: {},
+					rooms: {
+						showRoomSize: true
+					}
                 },
                 PricingSummaryRequest: {
-                    cheapestOnly: true,
+                    cheapestOnly: false,
                     context: {
                         isAllowBookOnRequest: true,
                         abTests: [],
@@ -121,8 +128,8 @@ const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
                         currency: 'USD',
                         details: {
                             cheapestPriceOnly: false,
-                            itemBreakdown: false,
-                            priceBreakdown: false
+                            itemBreakdown: true,
+                            priceBreakdown: true
                         },
                         featureFlag: [],
                         features: {
@@ -144,7 +151,6 @@ const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
                             secretDealOnly: false,
                             suppliers: []
                         },
-                        
                         occupancy: {
                             adults: 2,
                             children: 0,
@@ -808,14 +814,6 @@ const AgodaSearch = async (params: AgodaSearchParams): Promise<AreaSearch> => {
 					}
 				}
 			}
-			metaLab {
-				attributes {
-					attributeId
-					dataType
-					value
-					version
-				}
-			}
 			enrichment {
 				topSellingPoint {
 					tspType
@@ -896,4 +894,475 @@ fragment Frag113a4d8i6f141417ibf7 on DFCorBreakdownItem {
     return data.areaSearch;
 }
 
-export default AgodaSearch;
+export const AgodaListing = async (propertyIds: number | number[]) => {
+	if (!Array.isArray(propertyIds)) propertyIds = [ propertyIds ];
+	const { data }: PropertyDetailsSearchResult = await fetch('https://www.agoda.com/graphql/search', {
+        method: 'POST',
+        headers: {
+            'ag-language-locale': 'en-us',
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            operationName: 'propertyDetailsSearch',
+			variables: {
+				PropertyDetailsRequest: {
+					propertyIds
+				},
+				ContentInformationSummaryRequest: {},
+				ContentHighlightsRequest: {},
+				ContentLocalInformationRequest: {
+					showWalkablePlaces: true,
+					images: {
+						imageSizes: [
+							{
+								key: "main",
+								size: {
+									width: 360,
+									height: 270
+								}
+							}
+						]
+					}
+				},
+				ContentInformationRequest: {
+					showDynamicShortDescription: true
+				},
+				ContentFeaturesRequest: {
+					includeFacilityHighlights: true,
+					occupancyRequest: {
+						numberOfAdults: 2,
+						numberOfChildren: 0,
+						travelerType: 1,
+						lengthOfStay: 2
+					},
+					images: {
+						imageSizes: [
+							{
+								key: "original",
+								size: {
+									width: 360,
+									height: 270
+								}
+							}
+						]
+					}
+				}
+			},
+            query: (
+`query propertyDetailsSearch($PropertyDetailsRequest: PropertyDetailsRequest!, $ContentInformationSummaryRequest: ContentInformationSummaryRequest, $ContentHighlightsRequest: ContentHighlightsRequest, $ContentLocalInformationRequest: ContentLocalInformationRequest, $ContentInformationRequest: ContentInformationRequest, $ContentFeaturesRequest: ContentFeaturesRequest) {
+    propertyDetailsSearch(PropertyDetailsRequest: $PropertyDetailsRequest) {
+        propertyDetails {
+            propertyId
+            propertyMetaInfo {
+                propertyMetaRanking {
+                    numberOfProperty
+                    metrics {
+                        metricName
+                        rank
+                        absoluteValue
+                    }
+                }
+            }
+            contentDetail {
+                propertyId
+                contentSummary(ContentInformationSummaryRequest: $ContentInformationSummaryRequest) {
+                    propertyId
+                    displayName
+                    defaultName
+                    localeName
+                    accommodation {
+                        accommodationType
+                        accommodationName
+                    }
+                    propertyType
+                    address {
+                        address1
+                        address2
+                        countryCode
+                        area {
+                            id
+                            name
+                        }
+                        city {
+                            id
+                            name
+                        }
+                        country {
+                            id
+                            name
+                        }
+                        postalCode
+                        stateInfo {
+                            id
+							name
+                        }
+                    }
+                    awardsAndAccolades {
+                        goldCircleAward {
+                            year
+                        }
+                        advanceGuaranteeProgram {
+                            logo
+                            description
+                        }
+                    }
+                    remarks {
+                        renovationInfo {
+                            year
+                            renovationType
+                        }
+                    }
+                    hasHostExperience
+                    geoInfo {
+                        latitude
+                        longitude
+                    }
+                    rating
+                    asqType
+                    asqInfos {
+                        asqTypeId
+                    }
+                }
+                contentEngagement {
+                    peopleLooking
+                    todayBooking
+                }
+                contentHighlights(ContentHighlightsRequest: $ContentHighlightsRequest) {
+                    favoriteFeatures {
+                        category
+                        id
+                        images {
+                            id
+                            urls {
+                                key
+                                value
+                            }
+                        }
+                        name
+                        symbol
+                        tooltip
+                    }
+                    locationHighlightMessage {
+                        title
+                    }
+                    locationHighlights {
+                        distanceKm
+                        highlightType
+                        message
+                    }
+                    locations {
+                        tooltip
+                        symbol
+                        name
+                        images {
+                            id
+                            urls {
+                                key
+                                value
+                            }
+                        }
+                    }
+                    atfPropertyHighlights {
+                        id
+                        name
+                        symbol
+                        icon
+                        category
+                        images {
+                            id
+                            urls {
+                                key
+                                value
+                            }
+                        }
+                        tooltip
+                    }
+                }
+                contentLocalInformation(ContentLocalInformationRequest: $ContentLocalInformationRequest) {
+                    walkablePlaces {
+                        title
+                        totalCount
+                        description
+                        walkableCategories {
+                            categoryName
+                            totalCount
+                            topPlaces {
+                                name
+                                distanceInKm
+                                images {
+                                    urls {
+                                        value
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    nearbyProperties {
+                        categoryName
+                        categorySymbol
+                        id
+                        places {
+                            abbr
+                            distanceInKm
+                            duration
+                            durationIcon
+                            geoInfo {
+                                latitude
+                                longitude
+                                obfuscatedLat
+                                obfuscatedLong
+                            }
+                            images {
+                                urls {
+                                    value
+                                    key
+                                }
+                                id
+                            }
+                            landmarkId
+                            name
+                            typeId
+                            typeName
+                        }
+                    }
+                    cuisines {
+                        id
+                        images {
+                            urls {
+                                value
+                                key
+                            }
+                            id
+                        }
+                        name
+                        restaurants {
+                            cuisinesOffered
+                            distance
+                            id
+                            name
+                        }
+                    }
+                    locationSubscore {
+                        airportScore
+                        poiScore
+                        transportationScore
+                    }
+                    nearbyPlaces {
+                        abbr
+                        distanceInKm
+                        duration
+                        durationIcon
+                        geoInfo {
+                            latitude
+                            longitude
+                            obfuscatedLat
+                            obfuscatedLong
+                        }
+                        images {
+                            urls {
+                                value
+                                key
+                            }
+                            id
+                        }
+                        landmarkId
+                        name
+                        typeId
+                        typeName
+                    }
+                    nearbyShops {
+                        abbr
+                        distanceInKm
+                        duration
+                        durationIcon
+                        geoInfo {
+                            latitude
+                            longitude
+                            obfuscatedLat
+                            obfuscatedLong
+                        }
+                        images {
+                            urls {
+                                value
+                                key
+                            }
+                            id
+                        }
+                        landmarkId
+                        name
+                        typeId
+                        typeName
+                    }
+                    popularLandmarkNumber
+                    topPlaces {
+                        abbr
+                        distanceInKm
+                        duration
+                        durationIcon
+                        geoInfo {
+                            latitude
+                            longitude
+                            obfuscatedLat
+                            obfuscatedLong
+                        }
+                        images {
+                            urls {
+                                value
+                                key
+                            }
+                            id
+                        }
+                        landmarkId
+                        name
+                        typeId
+                        typeName
+                    }
+                }
+                contentInformation(ContentInformationRequest: $ContentInformationRequest) {
+                    usefulInfoGroups {
+                        id
+                        usefulInfo {
+                            id
+                            description
+                        }
+                    }
+                    certificate {
+                        name
+                        imageUrl
+                        description
+                    }
+                    staffVaccinationInfo {
+                        details
+                        status
+                    }
+                    messaging {
+                        responsiveRate
+                    }
+                    description {
+                        short
+                    }
+                    notes {
+                        criticalNotes
+                    }
+                    sustainabilityInfo {
+                        isSustainableTravel
+                        practiceCategories {
+                            categoryId
+                            categoryName
+                            practices {
+                                practiceId
+                                practiceName
+                            }
+                        }
+                    }
+                }
+                contentFeatures(ContentFeaturesRequest: $ContentFeaturesRequest) {
+                    featureGroups {
+                        features {
+                            available
+                            featureName
+                            featureNameLocalizationList {
+                                locale
+                                value
+                            }
+                            id
+                            order
+                            symbol
+                            images {
+                                id
+                                urls {
+                                    key
+                                    value
+                                }
+                                groupId
+                                groupEntityId
+                                typeId
+                                uploadedDate
+                                providerId
+                                caption
+                                highResolutionSizes
+                            }
+                        }
+                        id
+                        name
+                        order
+                        symbol
+                    }
+                    hotelFacilities {
+                        id
+                        name
+                    }
+                    summary {
+                        chineseFriendly
+                        staycationFacilityIds {
+                            activities
+                            drinkingAndDining
+                            sportAndEntertainment
+                            wellness
+                        }
+                        hygienePlusFacilities {
+                            healthAndMedical
+                            safetyFeature
+                            preventiveEquipment
+                        }
+                    }
+                    facilityHighlights {
+                        facilityId
+                        facilityName
+                        images {
+                            id
+                            urls {
+                                key
+                                value
+                            }
+                            groupId
+                            groupEntityId
+                            typeId
+                            uploadedDate
+                            providerId
+                            caption
+                            highResolutionSizes
+                        }
+                    }
+                }
+                hostProfile {
+                    displayName
+                    picture
+                    averageReviewScore
+                    totalReviews
+                    hostLevel
+                    responseRate
+                    responseTimeSeconds
+                    properties {
+                        id
+                        bookings
+                        reviewAvg
+                        reviewCount
+                    }
+                }
+            }
+        }
+    }
+}`
+            )
+        })
+    }).then(res => res.json());
+
+	return data.propertyDetailsSearch.propertyDetails;
+}
+
+export const AgodaListingSecondary = async (propertyId: number): Promise<SecondaryData> => {
+	const query = new URLSearchParams({
+		finalPriceView: '1',
+		adults: '2',
+		children: '0',
+		rooms: '1',
+		checkIn: '2023-07-12',
+		hotel_id: propertyId.toString(),
+		priceView: '2',
+		pagetypeid: '7',
+		los: '2'
+	});
+
+	return fetch(`https://www.agoda.com/api/cronos/property/BelowFoldParams/GetSecondaryData?${query.toString()}`).then(res => res.json());
+}

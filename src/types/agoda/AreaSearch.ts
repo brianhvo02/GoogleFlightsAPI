@@ -196,7 +196,6 @@ interface Property {
             }[];
         }[];
     }
-    metaLab: unknown;
     enrichment: {
         topSellingPoint:{
             tspType: string;

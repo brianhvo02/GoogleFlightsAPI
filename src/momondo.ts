@@ -1,3 +1,4 @@
+import { Airport } from "./types/momondo/Airport";
 import FlightResultsList from "./types/momondo/FlightResultList";
 import { checkCode, checkDepArrDates } from "./utils";
 
@@ -8,9 +9,9 @@ export interface MomondoSearchParams {
     arrDate: string;
 }
 
-export const airportSearch = async (query: string) => fetch(`https://www.momondo.com/mvm/smartyv2/search?s=airportonly&where=${query}`, { method: 'POST' }).then(res => res.json());
+export const AirportSearch = async (query: string): Promise<Airport[]> => fetch(`https://www.momondo.com/mvm/smartyv2/search?s=airportonly&where=${query}`, { method: 'POST' }).then(res => res.json());
 
-const MomondoSearch = async (params: MomondoSearchParams): Promise<FlightResultsList | undefined> => {
+export const MomondoSearch = async (params: MomondoSearchParams): Promise<FlightResultsList | undefined> => {
     const { depCode, arrCode, depDate, arrDate } = params;
 
     if (!checkCode(depCode) || !checkCode(arrCode)) {
@@ -70,5 +71,3 @@ const MomondoSearch = async (params: MomondoSearchParams): Promise<FlightResults
 
     return actions.FlightResultsList.results;
 }
-
-export default MomondoSearch;
