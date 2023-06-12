@@ -1,0 +1,473 @@
+AreaSearchRequest: {
+    searchRequest: {
+        searchCriteria: {
+            featureFlagRequest: {
+                fetchNamesForTealium: true,
+                fiveStarDealOfTheDay: true,
+                isAllowBookOnRequest: false,
+                showUnAvailable: true,
+                showRemainingProperties: true,
+                isMultiHotelSearch: false,
+                enableAgencySupplyForPackages: true,
+                flags: [
+                    {
+                        feature: 'FamilyChildFriendlyPopularFilter',
+                        enable: true
+                    },
+                    {
+                        feature: 'FamilyChildFriendlyPropertyTypeFilter',
+                        enable: true
+                    },
+                    {
+                        feature: 'FamilyMode',
+                        enable: false
+                    }
+                ],
+                enablePageToken: true,
+                enableDealsOfTheDayFilter: false,
+                isEnableSupplierFinancialInfo: false,
+                ignoreRequestedNumberOfRoomsForNha: false
+            },
+            travellerType: 'Couple',
+            isAPSPeek: false,
+            enableOpaqueChannel: false,
+            isEnabledPartnerChannelSelection: null,
+            requiredBasis: 'PRPN',
+            requiredPrice: 'Exclusive',
+            suggestionLimit: 0,
+            synchronous: false,
+            supplierPullMetadataRequest: null,
+            isRoomSuggestionRequested: false,
+            isAPORequest: false,
+            hasAPOFilter: false
+        }
+        searchContext: {
+            userId: '3e54bef6-8841-4105-b685-e18f9edebd71',
+            deviceTypeId: 1,
+            experiments: {
+                forceByVariant: null,
+                forceByExperiment: [
+                    {
+                        id: 'UMRAH-B2B',
+                        variant: 'B'
+                    },
+                    {
+                        id: 'UMRAH-B2C-REGIONAL',
+                        variant: 'B'
+                    },
+                    {
+                        id: 'UMRAH-B2C',
+                        variant: 'Z'
+                    },
+                    {
+                        id: 'JGCW-204',
+                        variant: 'B'
+                    }
+                ]
+            },
+            isRetry: false,
+            showCMS: false,
+            storeFrontId: 3,
+            whiteLabelKey: null,
+            ipAddress: '76.133.223.198',
+            trackSteps: null,
+            searchId: 'd782a613-0065-4eb1-bb08-d0d36efaadef'
+        },
+        matrix: null,
+        matrixGroup: [
+            {
+                matrixGroup: 'NumberOfBedrooms',
+                size: 100
+            },
+            {
+                matrixGroup: 'GroupedBedTypes',
+                size: 100
+            },
+            {
+                matrixGroup: 'RoomBenefits',
+                size: 100
+            },
+            {
+                matrixGroup: 'PopularForFamily',
+                size: 5
+            },
+            {
+                matrixGroup: 'RoomAmenities',
+                size: 100
+            },
+            {
+                matrixGroup: 'AffordableCategory',
+                size: 100
+            },
+            {
+                matrixGroup: 'HotelFacilities',
+                size: 100
+            },
+            {
+                matrixGroup: 'BeachAccessTypeIds',
+                size: 100
+            },
+            {
+                matrixGroup: 'StarRating',
+                size: 20
+            },
+            {
+                matrixGroup: 'KidsStayForFree',
+                size: 5
+            },
+            {
+                matrixGroup: 'AllGuestReviewBreakdown',
+                size: 100
+            },
+            {
+                matrixGroup: 'FamilyFacilities',
+                size: 5
+            },
+            {
+                matrixGroup: 'MetroSubwayStationLandmarkIds',
+                size: 20
+            },
+            {
+                matrixGroup: 'CityCenterDistance',
+                size: 100
+            },
+            {
+                matrixGroup: 'ProductType',
+                size: 100
+            },
+            {
+                matrixGroup: 'Themes',
+                size: 4
+            },
+            {
+                matrixGroup: 'BusStationLandmarkIds',
+                size: 20
+            },
+            {
+                matrixGroup: 'IsSustainableTravel',
+                size: 2
+            },
+            {
+                matrixGroup: 'ReviewLocationScore',
+                size: 3
+            },
+            {
+                matrixGroup: 'LandmarkSubTypeCategoryIds',
+                size: 20
+            },
+            {
+                matrixGroup: 'ReviewScore',
+                size: 100
+            },
+            {
+                matrixGroup: 'AccommodationType',
+                size: 100
+            },
+            {
+                matrixGroup: 'PaymentOptions',
+                size: 100
+            },
+            {
+                matrixGroup: 'TrainStationLandmarkIds',
+                size: 20
+            },
+            {
+                matrixGroup: 'HotelChainId',
+                size: 10
+            },
+            {
+                matrixGroup: 'RecommendedByDestinationCity',
+                size: 10
+            },
+            {
+                matrixGroup: 'Deals',
+                size: 100
+            }
+        ],
+        filterRequest: {
+            idsFilters: [],
+            rangeFilters: [],
+            textFilters: []
+        },
+        page: {
+            pageSize: 45,
+            pageNumber: 1,
+            pageToken: ''
+        },
+        apoRequest: {
+            apoPageSize: 10
+        },
+        searchHistory: null,
+        searchDetailRequest: {
+            priceHistogramBins: 50
+        },
+        isTrimmedResponseRequested: false,
+        featuredAgodaHomesRequest: null,
+        featuredLuxuryHotelsRequest: null,
+        highlyRatedAgodaHomesRequest: {
+            numberOfAgodaHomes: 30,
+            minimumReviewScore: 7.5,
+            minimumReviewCount: 3,
+            accommodationTypes: [
+                28,
+                29,
+                30,
+                102,
+                103,
+                106,
+                107,
+                108,
+                109,
+                110,
+                114,
+                115,
+                120,
+                131
+            ],
+            sortVersion: 0
+        },
+        extraAgodaHomesRequest: null,
+        extraHotels: {
+            extraHotelIds: [],
+            enableFiltersForExtraHotels: false
+        },
+        packaging: null,
+        flexibleSearchRequest: {
+            fromDate: '2023-06-11',
+            toDate: '2023-08-11',
+            alternativeDateSize: 4,
+            isFullFlexibleDateSearch: false
+        },
+        rankingRequest: {
+            isNhaKeywordSearch: false,
+            isPulseRankingBoost: false
+        },
+        rocketmilesRequestV2: null,
+        featuredPulsePropertiesRequest: null
+    },
+    ContentSummaryRequest: {
+        context: {
+            rawUserId: '3e54bef6-8841-4105-b685-e18f9edebd71',
+            memberId: 0,
+            userOrigin: 'US',
+            forceExperimentsByIdNew: [
+                {
+                    key: 'UMRAH-B2B',
+                    value: 'B'
+                },
+                {
+                    key: 'UMRAH-B2C-REGIONAL',
+                    value: 'B'
+                },
+                {
+                    key: 'UMRAH-B2C',
+                    value: 'Z'
+                },
+                {
+                    key: 'JGCW-204',
+                    value: 'B'
+                }
+            ],
+            apo: false,
+            searchCriteria: {
+                cityId: 10921
+            },
+            platform: {
+                id: 1
+            },
+            storeFrontId: 3,
+            cid: '-1',
+            occupancy: {
+                numberOfAdults: 2,
+                numberOfChildren: 0,
+                travelerType: 2,
+                checkIn: '2023-07-12T07:00:00.000Z'
+            },
+            deviceTypeId: 1,
+            whiteLabelKey: '',
+            correlationId: ''
+        },
+        summary: {
+            highlightedFeaturesOrderPriority: null,
+            description: false,
+            includeHotelCharacter: true
+        },
+        reviews: {
+            commentary: null,
+            demographics: {
+                providerIds: null,
+                filter: {
+                    defaultProviderOnly: true
+                }
+            },
+            summaries: {
+                providerIds: null,
+                apo: true,
+                limit: 1,
+                travellerType: 2
+            },
+            cumulative: {
+                providerIds: null
+            },
+            filters: null
+        },
+        images: {
+            page: null,
+            maxWidth: 0,
+            maxHeight: 0,
+            imageSizes: null,
+            indexOffset: null
+        },
+        rooms: {
+            images: null,
+            featureLimit: 0,
+            filterCriteria: null,
+            includeMissing: false,
+            includeSoldOut: false,
+            includeDmcRoomId: false,
+            soldOutRoomCriteria: null,
+            showRoomSize: true,
+            showRoomFacilities: true,
+            showRoomName: false
+        },
+        nonHotelAccommodation: true,
+        engagement: true,
+        highlights: {
+            maxNumberOfItems: 0,
+            images: {
+                imageSizes: [
+                    {
+                        key: 'full',
+                        size: {
+                            width: 0,
+                            height: 0
+                        }
+                    }
+                ]
+            }
+        },
+        personalizedInformation: false,
+        localInformation: {
+            images: null
+        },
+        features: null,
+        rateCategories: true,
+        contentRateCategories: {
+            escapeRateCategories: {}
+        },
+        synopsis: true
+    },
+    PricingSummaryRequest: {
+        context: {
+            abTests: [
+                {
+                    testId: 9021,
+                    abUser: 'B'
+                },
+                {
+                    testId: 9023,
+                    abUser: 'B'
+                },
+                {
+                    testId: 9024,
+                    abUser: 'B'
+                },
+                {
+                    testId: 9025,
+                    abUser: 'B'
+                },
+                {
+                    testId: 9027,
+                    abUser: 'B'
+                },
+                {
+                    testId: 9029,
+                    abUser: 'B'
+                }
+            ],
+            clientInfo: {
+                ipAddress: '76.133.223.198'
+            },
+            experiment: [
+                {
+                    name: 'UMRAH-B2B',
+                    variant: 'B'
+                },
+                {
+                    name: 'UMRAH-B2C-REGIONAL',
+                    variant: 'B'
+                },
+                {
+                    name: 'UMRAH-B2C',
+                    variant: 'Z'
+                },
+                {
+                    name: 'JGCW-204',
+                    variant: 'B'
+                }
+            ],
+            isDebug: false,
+            packaging: null,
+        },
+        isSSR: true,
+        roomSortingStrategy: null,
+        pricing: {
+            featureFlag: [
+                'ClientDiscount',
+                'PriceHistory',
+                'VipPlatinum',
+                'RatePlanPromosCumulative',
+                'PromosCumulative',
+                'CouponSellEx',
+                'MixAndSave',
+                'APSPeek',
+                'StackChannelDiscount',
+                'AutoApplyPromos',
+                'EnableAgencySupplyForPackages',
+                'EnableCashback',
+                'CreditCardPromotionPeek',
+                'EnableCofundedCashback',
+                'DispatchGoLocalForInternational',
+                'EnableGoToTravelCampaign'
+            ],
+            features: {
+                isMSE: true,
+                maxSuggestions: 0,
+                isEnableSupplierFinancialInfo: false,
+                isLoggingAuctionData: false,
+                filterCheapestRoomEscapesPackage: false,
+                enableRichContentOffer: true,
+                showCouponAmountInUserCurrency: false,
+                disableEscapesPackage: false,
+                enablePushDayUseRates: false,
+                enableDayUseCor: false
+            },
+            filters: {
+                ratePlans: [
+                    1
+                ],
+                nosOfBedrooms: []
+            },
+            includedPriceInfo: false,
+            occupancy: {
+                childrenTypes: []
+            },
+            mseHotelIds: [],
+            ppLandingHotelIds: [],
+            searchedHotelIds: [],
+            paymentId: -1,
+            externalLoyaltyRequest: null
+        }
+    },
+    PriceStreamMetaLabRequest: {
+        attributesId: [
+            8,
+            1,
+            18,
+            7,
+            11,
+            2,
+            3
+        ]
+    }
+}
