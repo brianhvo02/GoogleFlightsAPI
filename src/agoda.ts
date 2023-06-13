@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { AreaSearchResult } from './types/agoda/AreaSearch';
 import LocationSearchResult from './types/agoda/LocationSearchResult';
 import { PropertyDetailsSearchResult } from './types/agoda/PropertyDetailsSearch';
@@ -890,11 +891,13 @@ fragment Frag113a4d8i6f141417ibf7 on DFCorBreakdownItem {
             )
         })
     }).then(res => res.json());
+
+	data.areaSearch.properties = _.uniqBy(data.areaSearch.properties, property => property.propertyId);
     
     return data.areaSearch;
 }
 
-export const AgodaListing = async (propertyIds: number | number[]) => {
+export const AgodaListingSecondary = async (propertyIds: number | number[]) => {
 	if (!Array.isArray(propertyIds)) propertyIds = [ propertyIds ];
 	const { data }: PropertyDetailsSearchResult = await fetch('https://www.agoda.com/graphql/search', {
         method: 'POST',
@@ -1351,7 +1354,7 @@ export const AgodaListing = async (propertyIds: number | number[]) => {
 	return data.propertyDetailsSearch.propertyDetails;
 }
 
-export const AgodaListingSecondary = async (propertyId: number): Promise<SecondaryData> => {
+export const AgodaListing = async (propertyId: number): Promise<SecondaryData> => {
 	const query = new URLSearchParams({
 		finalPriceView: '1',
 		adults: '2',

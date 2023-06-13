@@ -3,7 +3,53 @@ import { MomondoSearch, AirportSearch } from "./momondo";
 import _ from 'lodash';
 
 (async () => {
-    // const airports = await AirportSearch('honolulu')
+    const { ViewModelList } = await AgodaLocationSearch('waikiki');
+    const viewModel = ViewModelList[1];
+    const { ObjectId, CityId } = viewModel;
+
+    const search = await AgodaSearch({
+        cityId: CityId, 
+        areaId: ObjectId, 
+        checkIn: '2023-07-12', 
+        checkOut: '2023-07-14',
+        rooms: 1,
+        adults: 2
+    });
+
+    console.log(search.properties[0])
+    
+    // const properties = search.properties.map(({ propertyId, content, pricing }) => ({
+    //     propertyId, 
+    //     name: content.informationSummary.displayName,
+    //     price: pricing.offers[0].roomOffers[0].room.pricing[0].price.perBook.exclusive.display,
+    //     priceWithFees: pricing.offers[0].roomOffers[0].room.pricing[0].price.perBook.inclusive.display
+    // }));
+    // console.table(properties);
+
+    // const listing = await AgodaListing(292749);
+    // const { hotelInfo, roomGridData } = listing;
+    // console.log(listing)
+
+    // const { name, engagement, starRating, address } = hotelInfo;
+    // console.log(name, engagement.todayBooking && `(${engagement.todayBooking})`);
+    // console.log('%i stars', starRating.value);
+    // console.log(address.full);
+    
+    // roomGridData.masterRooms.forEach(({ name, lastBooked, rooms }) => {
+    //     console.log(name, lastBooked && `(${lastBooked})`);
+
+    //     const formattedRooms = rooms.map(room => ({
+    //         occupancy: room.occupancy,
+    //         availability: room.availability,
+    //         currentPrice: room.totalPrice.display,
+    //         highestHistoryPrice: room.totalPrice.crossedOut,
+    //         cancellation: room.cancellation.title
+    //     }));
+
+    //     console.table(formattedRooms);
+    // });
+
+    // const airports = await AirportSearch('sunnyvale')
     //     .then(results =>
     //         results.map(result => 
     //             ({
@@ -24,7 +70,7 @@ import _ from 'lodash';
     // });
     // if (!list || _.isEmpty(list)) return;
     // const results = Object.values(list);
-    
+
     // results.forEach(({ legs, optionsByFare }) => {
     //     if (!legs || !optionsByFare) return;
 
@@ -56,29 +102,8 @@ import _ from 'lodash';
 
     //     console.log('\n');
     // });
-    
-    // const { ViewModelList } = await AgodaLocationSearch('waikiki');
-    // const viewModel = ViewModelList[1];
-    // const { ObjectId, CityId } = viewModel;
-
-    // const search = await AgodaSearch({
-    //     cityId: CityId, 
-    //     areaId: ObjectId, 
-    //     checkIn: '2023-07-12', 
-    //     checkOut: '2023-07-14',
-    //     rooms: 1,
-    //     adults: 2
-    // });
-    
-    // const properties = search.properties.map(({ propertyId, content, pricing }) => ({
-    //     propertyId, 
-    //     name: content.informationSummary.displayName,
-    //     price: pricing.offers[0].roomOffers[0].room.pricing[0].price.perNight.exclusive.display,
-    //     priceWithFees: pricing.offers[0].roomOffers[0].room.pricing[0].price.perNight.inclusive.display
-    // }));
-    // console.table(properties);
         
-    // const listing = await AgodaListing(343978);
+    // const listing = await AgodaListingSecondary([75825, 292749]);
     // listing.forEach(property => {
     //     const content = property.contentDetail.contentSummary;
     //     const { displayName, address } = content;
@@ -89,8 +114,6 @@ import _ from 'lodash';
     //     console.log(`${area.name}, ${city.name}`);
     //     console.log(`${stateInfo.name} ${postalCode}`);
     //     console.log(country.name);
+    //     console.log();
     // });
-
-    // const { inquiryProperty, hotelInfo, roomGridData } = await AgodaListingSecondary(343978);
-    // console.log(roomGridData)
 })();
