@@ -1,22 +1,26 @@
-import { AgodaSearch, AgodaLocationSearch, AgodaListing, AgodaListingSecondary } from "./agoda";
-import { MomondoSearch, AirportSearch } from "./momondo";
+// import { AgodaSearch, AgodaLocationSearch, AgodaListing, AgodaListingSecondary } from "./agoda";
+// import { MomondoSearch, AirportSearch } from "./momondo";
 import _ from 'lodash';
+import { GoogleLocationSearch, GoogleSearch } from './google';
+import { Stops } from './types/google/FlightSearchResults';
 
 (async () => {
-    const { ViewModelList } = await AgodaLocationSearch('waikiki');
-    const viewModel = ViewModelList[1];
-    const { ObjectId, CityId } = viewModel;
+    // const { ViewModelList } = await AgodaLocationSearch('waikiki');
+    // const viewModel = ViewModelList[1];
+    // const { ObjectId, CityId } = viewModel;
 
-    const search = await AgodaSearch({
-        cityId: CityId, 
-        areaId: ObjectId, 
-        checkIn: '2023-07-12', 
-        checkOut: '2023-07-14',
-        rooms: 1,
-        adults: 2
-    });
+    // const search = await AgodaSearch({
+    //     cityId: CityId, 
+    //     areaId: ObjectId, 
+    //     checkIn: '2023-07-12', 
+    //     checkOut: '2023-07-14',
+    //     rooms: 1,
+    //     adults: 2
+    // });
 
-    console.log(search.properties[0])
+    // What’s your schedule like this week or next?
+
+    // console.log(search.properties[0].content.informationSummary)
     
     // const properties = search.properties.map(({ propertyId, content, pricing }) => ({
     //     propertyId, 
@@ -71,6 +75,8 @@ import _ from 'lodash';
     // if (!list || _.isEmpty(list)) return;
     // const results = Object.values(list);
 
+    // console.log(results)
+
     // results.forEach(({ legs, optionsByFare }) => {
     //     if (!legs || !optionsByFare) return;
 
@@ -116,4 +122,13 @@ import _ from 'lodash';
     //     console.log(country.name);
     //     console.log();
     // });
+
+    const [ location ] = await GoogleLocationSearch('san francisco');
+    console.log(location)
+    await GoogleSearch({
+        departureIdentifier: location.identifier,
+        // stops: Stops.NONSTOP,
+        duration: 360,
+        roundtrip: false
+    })
 })();
