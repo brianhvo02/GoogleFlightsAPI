@@ -76,15 +76,27 @@ export const GoogleSearch = async ({
     departureIdentifier, arrivalIdentifier, 
     departureDate, arrivalDate,
     stops = Stops.ANY, duration,
-    roundtrip = true
+    roundtrip = true,
+    passengers
 }: FlightSearchParams) => {
-    if (departureDate && arrivalDate)
-        checkDepArrDates(departureDate, arrivalDate);
-    else if (departureDate && !arrivalDate && !departureDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-		throw new Error('Check in date not formatted correctly (YYYY-MM-DD)');
-    } else if (arrivalDate && !departureDate) {
+    if (
+        !(
+            (departureDate && arrivalDate) 
+                || 
+            (!departureDate && !arrivalDate)
+        )
+    ) throw new Error('Either departure or arrival date not provided');
+    
+    if (
+        departureDate && arrivalDate 
+            && 
+        (
+            !departureDate?.match(/^\d{4}-\d{2}-\d{2}$/) 
+                || 
+            !arrivalDate?.match(/^\d{4}-\d{2}-\d{2}$/)
+        )
+    ) throw new Error('Departure or arrival date not formatted correctly (YYYY-MM-DD)');
 
-    }
     const query = [
         [], 
         // [
@@ -94,7 +106,13 @@ export const GoogleSearch = async ({
         null,
         null, 
         [
-            null, null, roundtrip ? 1 : 2, null, [], 1, [1,0,0,0],
+            null, null, roundtrip ? 1 : 2, null, [], 1, 
+            [
+                passengers?.adults ?? 1,
+                passengers?.children ?? 0,
+                passengers?.infantsOnLap ?? 0,
+                passengers?.infantsInSeat ?? 0
+            ],
             null, null, null, null, null, null,
             [
                 [
@@ -104,7 +122,7 @@ export const GoogleSearch = async ({
                     ]]],
                     [ [] ],
                     null, stops, [], [],
-                    "2023-07-17",
+                    departureDate,
                     duration ? [ duration ] : null, 
                     [], [], [], null, null, [], 3
                 ],
@@ -116,7 +134,7 @@ export const GoogleSearch = async ({
                             4
                         ]]],
                         null, stops, [], [],
-                        "2023-07-21",
+                        arrivalDate,
                         duration ? [ duration ] : null
                         , [], [], [], null, null, [], 3
                     ]
@@ -181,7 +199,7 @@ export const GoogleSearch = async ({
     // console.log(flights[4][0].find((test: any) => test[0] === id3))
 
     // console.log( flightInfo[4][0].find((x: any) => x[0] === cities[1].identifier))
-    console.log(cities[0]);
+    console.log(json);
 
     // return results;
 }

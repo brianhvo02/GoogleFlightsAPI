@@ -2,7 +2,6 @@
 // import { MomondoSearch, AirportSearch } from "./momondo";
 import _ from 'lodash';
 import { GoogleLocationSearch, GoogleSearch } from './google';
-import { Stops } from './types/google/FlightSearchResults';
 
 (async () => {
     // const { ViewModelList } = await AgodaLocationSearch('waikiki');
@@ -124,11 +123,17 @@ import { Stops } from './types/google/FlightSearchResults';
     // });
 
     const [ location ] = await GoogleLocationSearch('san francisco');
-    console.log(location)
+    // console.log(location)
     await GoogleSearch({
+        departureDate: '2023-07-21',
+        arrivalDate: '2023-07-25',
         departureIdentifier: location.identifier,
         // stops: Stops.NONSTOP,
-        duration: 360,
-        roundtrip: false
+        // duration: 360,
+        roundtrip: false,
+        passengers: {
+            adults: 2,
+            children: 2
+        }
     })
 })();

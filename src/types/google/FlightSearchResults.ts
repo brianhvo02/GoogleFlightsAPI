@@ -24,6 +24,12 @@ export interface FlightSearchParams {
     stops?: Stops;
     duration?: number;
     roundtrip?: boolean;
+    passengers?: {
+        adults?: number;
+        children?: number;
+        infantsOnLap?: number;
+        infantsInSeat?: number;
+    }
 }
 
 export enum Stops {
