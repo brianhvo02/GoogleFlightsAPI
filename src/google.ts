@@ -1,4 +1,4 @@
-import FlightSearchResult, { Flight, FlightSearchParams, Stops } from "./types/google/FlightSearchResults";
+import FlightSearchResult, { Flight, FlightSearchParams, SeatClass, Stops } from "./types/google/FlightSearchResults";
 import LocationSearchResult from "./types/google/LocationSearchResult";
 import { checkDepArrDates } from "./utils";
 
@@ -73,29 +73,26 @@ export const GoogleLocationSearch = async (search: string): Promise<LocationSear
 }
 
 export const GoogleSearch = async ({
-    departureIdentifier, arrivalIdentifier, 
-    departureDate, arrivalDate,
+    outbound, returning,
     stops = Stops.ANY, duration,
     roundtrip = true,
-    passengers
+    passengers,
+    seatClass = SeatClass.ECONOMY,
+    maxPrice,
+    alliances = []
 }: FlightSearchParams) => {
+    if (!outbound.identifier)
+        throw new Error('Outbound identifier required');
+
     if (
-        !(
-            (departureDate && arrivalDate) 
-                || 
-            (!departureDate && !arrivalDate)
-        )
-    ) throw new Error('Either departure or arrival date not provided');
-    
-    if (
-        departureDate && arrivalDate 
+        outbound.date && returning?.date 
             && 
         (
-            !departureDate?.match(/^\d{4}-\d{2}-\d{2}$/) 
+            !outbound.date.match(/^\d{4}-\d{2}-\d{2}$/) 
                 || 
-            !arrivalDate?.match(/^\d{4}-\d{2}-\d{2}$/)
+            !returning.date.match(/^\d{4}-\d{2}-\d{2}$/)
         )
-    ) throw new Error('Departure or arrival date not formatted correctly (YYYY-MM-DD)');
+    ) throw new Error('Outbound or return date not formatted correctly (YYYY-MM-DD)');
 
     const query = [
         [], 
@@ -106,43 +103,54 @@ export const GoogleSearch = async ({
         null,
         null, 
         [
-            null, null, roundtrip ? 1 : 2, null, [], 1, 
+            null, null, roundtrip ? 1 : 2, null, [],
+            seatClass, 
             [
                 passengers?.adults ?? 1,
                 passengers?.children ?? 0,
                 passengers?.infantsOnLap ?? 0,
                 passengers?.infantsInSeat ?? 0
             ],
-            null, null, null, null, null, null,
+            maxPrice && [
+                null, maxPrice
+            ], 
+            null, null, null, null, null,
             [
                 [
                     [[[
-                        departureIdentifier,
+                        outbound.identifier,
                         4
                     ]]],
                     [ [] ],
-                    null, stops, [], [],
-                    departureDate,
-                    duration ? [ duration ] : null, 
+                    outbound.times?.departure.concat(outbound.times.arrival) ,
+                    stops, 
+                    alliances, 
+                    [],
+                    outbound.date,
+                    duration && [ duration ], 
                     [], [], [], null, null, [], 3
                 ],
                 ...(roundtrip ? [
                     [
                         [ [] ], 
                         [[[
-                            departureIdentifier,
+                            returning?.identifier,
                             4
                         ]]],
-                        null, stops, [], [],
-                        arrivalDate,
-                        duration ? [ duration ] : null
-                        , [], [], [], null, null, [], 3
+                        returning?.times?.departure.concat(returning.times.arrival),
+                        stops, 
+                        alliances, 
+                        [],
+                        returning?.date,
+                        duration && [ duration ],
+                        [], [], [], null, null, [], 3
                     ]
                 ] : [])
             ],
             null, null, null, 1, null, null, null, null, null, [], 1, 1
         ], 
-        null, 1, null, 0, null, 0, [ 1241.3333740234375, 1256 ]
+        null, 1, null, 0, null, 0, [ 1088 , 1256 ]
+        //1241.3333740234375
     ];
 
     console.log(JSON.stringify(query))
@@ -164,9 +172,9 @@ export const GoogleSearch = async ({
     const flights: { [key: string]: Flight } = flightInfo[4][0].reduce((info: any, listing: any) => ({
         ...info,
         [listing[0]]: {
-            price: listing[1]?.[0][1] ?? 'N/A',
+            price: listing[1]?.[0][1] ?? 0,
             stops: listing[6][2],
-            length: listing[6][3] || 'N/A',
+            length: listing[6][3] || 0,
             lengthString: `${Math.floor(listing[6][3] / 60)} hr ${listing[6][3] % 60} min` || 'N/A',
             iata: listing[6][0],
             airline: listing[6][1] || 'N/A',
@@ -199,7 +207,7 @@ export const GoogleSearch = async ({
     // console.log(flights[4][0].find((test: any) => test[0] === id3))
 
     // console.log( flightInfo[4][0].find((x: any) => x[0] === cities[1].identifier))
-    console.log(json);
+    console.log(cities.filter(city => city.flight?.length > 0).slice(0, 5));
 
     // return results;
 }
