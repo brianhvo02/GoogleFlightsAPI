@@ -1,8 +1,8 @@
 // import { AgodaSearch, AgodaLocationSearch, AgodaListing, AgodaListingSecondary } from "./agoda";
 // import { MomondoSearch, AirportSearch } from "./momondo";
 import _ from 'lodash';
-import { GoogleLocationSearch, GoogleSearch } from './google';
-import { AirlineAlliance, SeatClass } from './types/google/FlightSearchResults';
+import { GoogleExplore, GoogleLocationSearch, GoogleSearch } from './google';
+import { AirlineAlliance, SeatClass, Stops } from './types/google/FlightSearchResults';
 
 (async () => {
     // const { ViewModelList } = await AgodaLocationSearch('waikiki');
@@ -123,35 +123,37 @@ import { AirlineAlliance, SeatClass } from './types/google/FlightSearchResults';
     //     console.log();
     // });
 
-    const [ location ] = await GoogleLocationSearch('san francisco');
-    // console.log(location)
-    await GoogleSearch({
-        outbound: {
-            identifier: location.identifier,
-            date: '2023-08-21',
-            // times: {
-            //     departure: [0, 5],
-            //     arrival: [0, 6]
-            // }
-        },
-        returning: {
-            date: '2023-08-25',
+    const [ locationDep ] = await GoogleLocationSearch('san francisco');
+    const [ locationArr ] = await GoogleLocationSearch('los angeles');
+    
+    const test = await GoogleSearch({
+        outboundIdentifier: locationDep.identifier,
+        outboundDate: '2023-08-21',
+        // times: {
+        //     departure: [0, 5],
+        //     arrival: [0, 6]
+        // }
+        returnIdentifier: locationArr.identifier,
+        // returning: {
+            // date: '2023-08-25',
             // times: {
             //     departure: [0, 7],
             //     arrival: [0, 8]
             // }
-        },
+        // },
         // stops: Stops.NONSTOP,
         // duration: 360,
         // roundtrip: true,
-        // passengers: {
-        //     adults: 2
-        // },
-        // seatClass: SeatClass.FIRST,
+        passengers: {
+            adults: 1
+        },
+        seatClass: SeatClass.ECONOMY,
+        roundtrip: false
         // maxPrice: 100,
         // alliances: [
         //     AirlineAlliance.STAR_ALLIANCE,
         //     AirlineAlliance.SKYTEAM
         // ]
-    })
+    });
+    console.log(test)
 })();

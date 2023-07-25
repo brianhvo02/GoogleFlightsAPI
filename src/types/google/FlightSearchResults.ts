@@ -20,9 +20,13 @@ export interface Flight {
     arrivalAirportIdentifier: string;
 }
 
-export interface FlightSearchParams {
-    outbound: RequestInfo;
-    returning?: RequestInfo;
+export interface FlightDiscoverParams {
+    outboundIdentifier: string;
+    outboundDate?: string;
+    outboundTimes?: RequestTimes;
+    returnIdentifier?: string;
+    returnDate?: string;
+    returnTimes?: RequestTimes;
     stops?: Stops;
     duration?: number;
     roundtrip?: boolean;
@@ -35,15 +39,34 @@ export interface FlightSearchParams {
     seatClass?: SeatClass;
     maxPrice?: number;
     alliances?: AirlineAlliance[];
+    airlines?: string[];
 }
 
-interface RequestInfo {
-    identifier?: string;
-    date?: string;
-    times?: {
-        departure: [number, number],
-        arrival: [number, number]
+export interface FlightSearchParams {
+    outboundIdentifier: string;
+    outboundDate: string;
+    outboundTimes?: RequestTimes;
+    returnIdentifier: string;
+    returnDate?: string;
+    returnTimes?: RequestTimes;
+    stops?: Stops;
+    duration?: number;
+    roundtrip: boolean;
+    passengers: {
+        adults: number;
+        children?: number;
+        infantsOnLap?: number;
+        infantsInSeat?: number;
     }
+    seatClass: SeatClass;
+    maxPrice?: number;
+    alliances?: AirlineAlliance[];
+    airlines?: string[];
+}
+
+interface RequestTimes {
+    departure: [number, number],
+    arrival: [number, number]
 }
 
 export enum Stops {
