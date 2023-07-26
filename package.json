@@ -1,16 +1,16 @@
 {
   "name": "google-flights-api",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "An unofficial API for Google Flights",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/index",
     "dev": "nodemon -e ts -w src -x 'npm run start'"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["api", "google", "flights"],
+  "author": "Brian Vo",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@types/lodash": "^4.14.195",
     "@types/node": "^20.3.0",
