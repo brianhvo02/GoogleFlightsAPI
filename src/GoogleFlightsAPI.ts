@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult } from "./types";
+import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult } from "./types.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;

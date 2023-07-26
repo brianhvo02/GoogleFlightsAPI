@@ -1,5 +1,5 @@
-import GoogleFlightsAPI from "./GoogleFlightsAPI";
-import { SeatClass, Stops } from "./types";
+import GoogleFlightsAPI from "./GoogleFlightsAPI.js";
+import { SeatClass, Stops } from "./types.js";
 
 (async () => {
     const [ locationDep ] = await GoogleFlightsAPI.locationSearch('San Francisco');
@@ -46,9 +46,7 @@ import { SeatClass, Stops } from "./types";
     const [result] = await api.search();
     console.log(`Found ${result.airlines[0]} flight from ${result.departure.airport.code} to ${result.arrival.airport.code} for $${result.price}`);
     
-    const test = await api.book([result]);
-    console.log(test)
-    const [paradiseBookingInfo] = test;
+    const [paradiseBookingInfo] = await api.book([result]);
     const paradiseBookingLink = await GoogleFlightsAPI.getBookingLink(paradiseBookingInfo);
     console.log(paradiseBookingLink);
 })();
