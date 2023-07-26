@@ -1,7 +1,7 @@
 // import { AgodaSearch, AgodaLocationSearch, AgodaListing, AgodaListingSecondary } from "./agoda";
 // import { MomondoSearch, AirportSearch } from "./momondo";
 import _ from 'lodash';
-import { GoogleExplore, GoogleLocationSearch, GoogleSearch } from './google';
+import { GoogleBookFlight, GoogleFlightExplore, GoogleFlightSearch, GoogleLocationSearch, getBookingLink } from './google';
 import { AirlineAlliance, SeatClass, Stops } from './types/google/FlightSearchResults';
 
 (async () => {
@@ -125,8 +125,8 @@ import { AirlineAlliance, SeatClass, Stops } from './types/google/FlightSearchRe
 
     const [ locationDep ] = await GoogleLocationSearch('san francisco');
     const [ locationArr ] = await GoogleLocationSearch('los angeles');
-    
-    const test = await GoogleSearch({
+
+    const params = {
         outboundIdentifier: locationDep.identifier,
         outboundDate: '2023-08-21',
         // times: {
@@ -145,7 +145,9 @@ import { AirlineAlliance, SeatClass, Stops } from './types/google/FlightSearchRe
         // duration: 360,
         // roundtrip: true,
         passengers: {
-            adults: 1
+            adults: 2,
+            // adults: 2,
+            // children: 1
         },
         seatClass: SeatClass.ECONOMY,
         roundtrip: false
@@ -154,6 +156,12 @@ import { AirlineAlliance, SeatClass, Stops } from './types/google/FlightSearchRe
         //     AirlineAlliance.STAR_ALLIANCE,
         //     AirlineAlliance.SKYTEAM
         // ]
-    });
-    console.log(test)
+    }
+    
+    const searchResults = await GoogleFlightSearch(params);
+    const result = searchResults[0];
+    const bookingInfo = await GoogleBookFlight(params, result.legs[0]);
+    const booking = bookingInfo[0];
+    const bookingLink = await getBookingLink(booking);
+    console.log(bookingLink)
 })();

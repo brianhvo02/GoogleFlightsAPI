@@ -1,4 +1,4 @@
-export default interface FlightSearchResult {
+export interface FlightDiscoverResult {
     identifier: string;
     coordinates: [number, number];
     city: string;
@@ -62,6 +62,72 @@ export interface FlightSearchParams {
     maxPrice?: number;
     alliances?: AirlineAlliance[];
     airlines?: string[];
+    booking?: {
+        departureDate: string;
+        departureAirport: string;
+        arrivalDate: string;
+        arrivalAirport: string;
+        flightNumber: {
+            code: string;
+            number: string;
+        }
+    }
+}
+
+export interface FlightSearchResult {
+    airlineCode: string;
+    airlines: string[];
+    legs: FlightLeg[];
+    departure: FlightInfo;
+    arrival: FlightInfo;
+    duration: number;
+    price: number | null;
+}
+
+export interface FlightLeg {
+    airlineOperator: string;
+    departure: FlightInfo;
+    arrival: FlightInfo;
+    duration: number;
+    legroom: string;
+    aircraft: string | null;
+    flightNumber: {
+        code: string;
+        number: string;
+        name: string;
+    }
+    emissions: number;
+    amenities: {
+        u1: boolean;
+        powerUSB: boolean;
+        u3: boolean;
+        powerOutlet: boolean;
+        u5: boolean;
+        u6: boolean;
+        u7: boolean;
+        u8: boolean;
+        liveTV: boolean;
+        u10: boolean;
+        streamMedia: boolean;
+        wifiFree: boolean;
+        wifiPaid: boolean;
+    }
+}
+
+interface FlightInfo {
+    airport: {
+        code: string;
+        name: string | null;
+    }
+    time: {
+        hours: number;
+        minutes: number;
+    }
+    date: {
+        year: number;
+        month: number;
+        day: number;
+    }
 }
 
 interface RequestTimes {
@@ -88,4 +154,14 @@ export enum AirlineAlliance {
     STAR_ALLIANCE = 'STAR_ALLIANCE',
     SKYTEAM = 'SKYTEAM',
     ONEWORLD = 'ONEWORLD'
+}
+
+export interface BookingInfo {
+    vendor: string;
+    vendorCode: string;
+    vendorHomepage: string;
+    link: string;
+    linkData: string;
+    price: number;
+    fareType: string | null;
 }
