@@ -1,5 +1,5 @@
 {
-  "name": "travel-bundler",
+  "name": "google-flights-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -18,7 +18,6 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "cheerio": "^1.0.0-rc.12",
     "lodash": "^4.17.21"
   }
 }
