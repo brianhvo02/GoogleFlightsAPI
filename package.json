@@ -1,6 +1,6 @@
 {
   "name": "google-flights-api-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An unofficial API for Google Flights",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
