@@ -246,7 +246,10 @@ export default class GoogleFlightsAPI {
                             this.config.passengers.infantsOnLap ?? 0,
                             this.config.passengers.infantsInSeat ?? 0
                         ], 
-                        null, null, null, null, null, null,
+                        this.config.maxPrice && [
+                            null, this.config.maxPrice
+                        ], 
+                        null, null, null, null, null,
                         [
                             [
                                 [
@@ -267,7 +270,7 @@ export default class GoogleFlightsAPI {
                                 ], 
                                 [], 
                                 this.config.outboundDate, 
-                                null, 
+                                this.config.duration && [ this.config.duration ], 
                                 legs ? legs.map(leg => [
                                     leg.departure.airport.code, transformDate(leg.departure.date),
                                     leg.arrival.airport.code, null, 
@@ -295,7 +298,7 @@ export default class GoogleFlightsAPI {
                                     ], 
                                     [], 
                                     this.config.returnDate, 
-                                    null, 
+                                    this.config.duration && [ this.config.duration ], 
                                     [],
                                     [], [], null, null, [], 3
                                 ]
@@ -433,7 +436,10 @@ export default class GoogleFlightsAPI {
                             this.config.passengers.infantsOnLap ?? 0,
                             this.config.passengers.infantsInSeat ?? 0
                         ], 
-                        null, null, null, null, null, null, 
+                        this.config.maxPrice && [
+                            null, this.config.maxPrice
+                        ], 
+                        null, null, null, null, null, 
                         [
                             [
                                 [

@@ -25,6 +25,8 @@ import { Month, TimeFrame } from "./types.js";
         // stops: Stops.ONE_OR_FEWER,
         // alliances: ['STAR_ALLIANCE'],
         // airlines: ['AS'],
+        // duration: 4 * 60,
+        // maxPrice: 100,
     }
 
     console.log(`Looking for somewhere to go from ${params.outboundDate} to ${params.returnDate}`);
