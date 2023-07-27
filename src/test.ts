@@ -29,25 +29,25 @@ import { Month, TimeFrame } from "./types.js";
         // maxPrice: 100,
     }
 
-    console.log(`Looking for somewhere to go from ${params.outboundDate} to ${params.returnDate}`);
+    console.log(`Looking for somewhere to go ${params.outboundDate ? `from ${params.outboundDate} to ${params.returnDate}`: ''}`);
     const api = new GoogleFlightsAPI(params);
 
     const [discoverResult] = await api.explore();
-    console.log(`Discovered ${discoverResult.city} for $${discoverResult.flight.price}`);
+    console.log(`Discovered ${discoverResult.city}, where the cheapest flight is $${discoverResult.flight.price}`);
 
     api.editConfig({
         destinationIdentifier: discoverResult.identifier,
-        // outboundDate: discoverResult.outboundDate,
-        // returnDate: discoverResult.returnDate
+        outboundDate: discoverResult.outboundDate,
+        returnDate: discoverResult.returnDate
     });
 
-    const [originResult] = await api.search();
+    const { flights: [originResult] } = await api.search();
     console.log(`Found ${originResult.airlines[0]} flight from ${originResult.departure.airport.code} to ${originResult.arrival.airport.code}`);
 
-    const [destinationResult] = await api.search(originResult.legs);
+    const { flights: [destinationResult] } = await api.search(originResult.legs);
     console.log(`Found ${destinationResult.airlines[0]} flight from ${destinationResult.departure.airport.code} to ${destinationResult.arrival.airport.code}`);
 
-    const [bookingInfo] = await api.book([originResult, destinationResult]);
+    const { bookings: [bookingInfo] } = await api.book([originResult, destinationResult]);
     if (bookingInfo.separateBookings) {
         for (const booking of bookingInfo.separateBookings) {
             if (!booking.link || !booking.linkData) continue;
@@ -65,10 +65,10 @@ import { Month, TimeFrame } from "./types.js";
         roundtrip: false
     });
 
-    const [result] = await api.search();
+    const { flights: [result], trendData: td1 } = await api.search();
     console.log(`Found ${result.airlines.join(', ')} flight from ${result.departure.airport.code} to ${result.arrival.airport.code} for $${result.price}`);
 
-    const [paradiseBookingInfo] = await api.book([result]);
+    const { bookings: [paradiseBookingInfo], trendData: td2 } = await api.book([result]);
     if (paradiseBookingInfo.separateBookings) {
         for (const booking of paradiseBookingInfo.separateBookings) {
             if (!booking.link || !booking.linkData) continue;
@@ -79,4 +79,5 @@ import { Month, TimeFrame } from "./types.js";
         const bookingLink = await GoogleFlightsAPI.getBookingLink(paradiseBookingInfo.link, paradiseBookingInfo.linkData);
         console.log(bookingLink);
     }
+    // console.table(td1?.trends.map(t => [new Date(t[0]).toLocaleDateString(), t[1]]))
 })();

@@ -87,6 +87,11 @@ export enum SeatClass {
 
 export type AirlineAlliance = 'STAR_ALLIANCE' | 'SKYTEAM' | 'ONEWORLD';
 
+export interface BookingResult {
+    bookings: BookingInfo[];
+    trendData: TrendData | null;
+}
+
 export interface BookingInfo {
     vendor: string;
     vendorCode: string;
@@ -99,6 +104,11 @@ export interface BookingInfo {
 }
 
 export interface FlightSearchResult {
+    flights: FlightResult[];
+    trendData: TrendData | null;
+}
+
+export interface FlightResult {
     airlineCode: string;
     airlines: string[];
     legs: FlightLeg[];
@@ -176,4 +186,14 @@ export interface Flight {
     airlineLogoUrl: string;
     arrivalAirport: string;
     departureAirportIdentifier: string;
+}
+
+export interface TrendData {
+    lowestPrice: number;
+    usualPrice: number;
+    difference: number;
+    lowThreshold: number;
+    highThreshold: number;
+    trends: [number, number][],
+    cityName: string;
 }

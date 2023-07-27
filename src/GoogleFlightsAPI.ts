@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame } from "./types.js";
+import { BookingInfo, BookingResult, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;
@@ -216,7 +216,7 @@ export default class GoogleFlightsAPI {
         return cities.filter(city => city.flight?.length > 0);
     }
 
-    async search(legs?: FlightLeg[]): Promise<FlightSearchResult[]> {
+    async search(legs?: FlightLeg[]): Promise<FlightSearchResult> {
         if (!this.config.originIdentifier)
             throw new Error('Outbound identifier required');
 
@@ -317,7 +317,7 @@ export default class GoogleFlightsAPI {
         ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
 
         if (!data[2] && !data[3])
-            return [];
+            return { flights: [], trendData: null };
     
         const bestFlights = data[2]?.[0] ?? [];
         const otherFlights = data[3]?.[0] ?? [];
@@ -416,11 +416,22 @@ export default class GoogleFlightsAPI {
             duration: f[0][9],
             price: f[1][0][1] ?? null
         });
-    
-        return bestFlights.concat(otherFlights).map(getFlightInfo);
+
+        return {
+            flights: bestFlights.concat(otherFlights).map(getFlightInfo),
+            trendData: data[5] && {
+                lowestPrice: data[5][1][1],
+                usualPrice: data[5][2][1],
+                difference: data[5][3][1],
+                lowThreshold: data[5][4][1],
+                highThreshold: data[5][5][1],
+                trends: data[5][10][0],
+                cityName: data[5][12]
+            } as TrendData
+        };
     }
 
-    async book(flights: FlightSearchResult[]): Promise<BookingInfo[]> {
+    async book(flights: FlightResult[]): Promise<BookingResult> {
         const body = new URLSearchParams({
             'f.req': JSON.stringify([
                 null, JSON.stringify([
@@ -509,10 +520,10 @@ export default class GoogleFlightsAPI {
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetBookingResults', 
             { method: 'POST', body }
-        ).then(GoogleFlightsAPI.parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1][0] : null);
+        ).then(GoogleFlightsAPI.parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1] : null);
 
-        if (!data)
-            return [];
+        if (!data[0])
+            return { bookings: [], trendData: null };
 
         const extractBookingData = (datum: any) => ({
             vendor: datum[1][0][1],
@@ -524,8 +535,20 @@ export default class GoogleFlightsAPI {
             fareType: datum[14]?.[0][0][1]?.[1] ?? null,
             separateBookings: datum[2]?.map(extractBookingData)
         });
-    
-        return data.filter((datum: any) => datum[0] === 0 || datum[0] === 5).map(extractBookingData);
+
+        return {
+            bookings: data[0].filter((datum: any) => datum[0] === 0 || datum[0] === 5)
+                .map(extractBookingData),
+            trendData: data[12] && {
+                lowestPrice: data[12][1][1],
+                usualPrice: data[12][2][1],
+                difference: data[12][3][1],
+                lowThreshold: data[12][4][1],
+                highThreshold: data[12][5][1],
+                trends: data[12][10][0],
+                cityName: data[12][12]
+            }
+        };
     }
 
     static getBookingLink = async (link: string, linkData: [ [ string, string ] ]) => 
