@@ -44,7 +44,7 @@ import { Month, TimeFrame } from "./types.js";
     const { flights: [originResult] } = await api.search();
     console.log(`Found ${originResult.airlines[0]} flight from ${originResult.departure.airport.code} to ${originResult.arrival.airport.code}`);
 
-    const { flights: [destinationResult] } = await api.search(originResult.legs);
+    const { flights: [destinationResult] } = await api.search(originResult);
     console.log(`Found ${destinationResult.airlines[0]} flight from ${destinationResult.departure.airport.code} to ${destinationResult.arrival.airport.code}`);
 
     const { bookings: [bookingInfo] } = await api.book([originResult, destinationResult]);

@@ -78,6 +78,116 @@ export default class GoogleFlightsAPI {
         });
     }
 
+    generatePayload = (type: 'explore' | 'search' | 'booking', flights?: FlightResult[]) => {
+        const payload = [
+            null, null, 
+            this.config.roundtrip ? 1 : 2, 
+            null,
+            (
+                type === 'explore' 
+                    &&
+                this.config.exploreMonth !== undefined 
+                    && 
+                (this.config.exploreTimeFrame !== undefined || this.config.roundtrip)
+                    &&
+                this.config.exploreMonth === Month.ALL 
+                    && 
+                (this.config.exploreTimeFrame === TimeFrame.ONE_WEEK || this.config.roundtrip)
+            ) ? [
+                this.config.exploreMonth, 
+                ...(this.config.roundtrip ? [this.config.exploreTimeFrame] : [])
+            ] : [],
+            this.config.seatClass, 
+            [
+                this.config.passengers.adults ?? 1,
+                this.config.passengers.children ?? 0,
+                this.config.passengers.infantsOnLap ?? 0,
+                this.config.passengers.infantsInSeat ?? 0
+            ], 
+            this.config.maxPrice && [
+                null, this.config.maxPrice
+            ], 
+            null, null, null, null, null,
+            [
+                [
+                    [
+                        [
+                            [ this.config.originIdentifier, 5 ]
+                        ]
+                    ],
+                    [
+                        type === 'explore' ? [] : [
+                            [ this.config.destinationIdentifier, 5 ]
+                        ]
+                    ],
+                    this.config.outboundTimes?.departure.concat(this.config.outboundTimes.arrival),
+                    this.config.stops ?? Stops.ANY, 
+                    [
+                        ...(this.config.alliances ?? []),
+                        ...(this.config.airlines ?? []),
+                    ], 
+                    [],
+                    this.config.outboundDate,
+                    this.config.duration && [ this.config.duration ],
+                    (type !== 'explore' && flights) ? flights[0].legs.map(leg => [
+                        leg.departure.airport.code, transformDate(leg.departure.date),
+                        leg.arrival.airport.code, null, 
+                        leg.flightNumber.code, leg.flightNumber.number
+                    ]) : [],
+                    [], [], null, null, [], 3
+                ],
+                ...(this.config.roundtrip ? [
+                    [
+                        [
+                            type === 'explore' ? [] : [
+                                [ this.config.destinationIdentifier, 5 ]
+                            ]
+                        ], 
+                        [
+                            [
+                                [
+                                    (
+                                        type === 'explore' ? (
+                                            this.config.destinationIdentifier ?? this.config.originIdentifier
+                                        ) : this.config.originIdentifier
+                                    ), 5 
+                                ]
+                            ]
+                        ],
+                        this.config.returnTimes?.departure.concat(this.config.returnTimes.arrival),
+                        this.config.stops ?? Stops.ANY, 
+                        [
+                            ...(this.config.alliances ?? []),
+                            ...(this.config.airlines ?? []),
+                        ], 
+                        [],
+                        this.config.returnDate,
+                        this.config.duration && [ this.config.duration ],
+                        (type === 'booking' && flights) ? flights[1].legs.map(leg => [
+                            leg.departure.airport.code, transformDate(leg.departure.date),
+                            leg.arrival.airport.code, null, 
+                            leg.flightNumber.code, leg.flightNumber.number
+                        ]) : [], 
+                        [], [], null, null, [], 3
+                    ]
+                ] : [])
+            ],
+            null, null, null, this.config.outboundDate ? 1 : 0, null, null, null, null, null, [], 1, 1
+        ]
+        return new URLSearchParams({
+            'f.req': JSON.stringify([
+                null,
+                JSON.stringify([
+                    [],
+                    type === 'explore'
+                        ? this.config.bounds
+                        : payload,
+                    ...(type === 'explore' ? [null, payload] : [])
+                ])
+            ])
+        });
+    };
+
     async explore() {
         const exploreTime = this.config.exploreMonth !== undefined 
             && (this.config.exploreTimeFrame !== undefined || !this.config.roundtrip);
@@ -91,96 +201,9 @@ export default class GoogleFlightsAPI {
         
         if (!exploreTime && !datesExist)
             throw new Error('Invalid config for explore');
-
-        const body = new URLSearchParams({
-            'f.req': JSON.stringify([
-                null,
-                JSON.stringify([
-                    [], this.config.bounds, null, 
-                    [
-                        null, null, 
-                        this.config.roundtrip ? 1 : 2, 
-                        null, 
-                        (
-                            this.config.exploreMonth !== undefined 
-                                && 
-                            (this.config.exploreTimeFrame !== undefined || this.config.roundtrip)
-                                &&
-                            this.config.exploreMonth === Month.ALL 
-                                && 
-                            (this.config.exploreTimeFrame === TimeFrame.ONE_WEEK || this.config.roundtrip)
-                        ) ? [
-                            this.config.exploreMonth, 
-                            ...(this.config.roundtrip ? [this.config.exploreTimeFrame] : [])
-                        ] : [],
-                        this.config.seatClass, 
-                        [
-                            this.config.passengers?.adults ?? 1,
-                            this.config.passengers?.children ?? 0,
-                            this.config.passengers?.infantsOnLap ?? 0,
-                            this.config.passengers?.infantsInSeat ?? 0
-                        ],
-                        this.config.maxPrice && [
-                            null, this.config.maxPrice
-                        ], 
-                        null, null, null, null, null,
-                        [
-                            [
-                                [
-                                    [
-                                        [
-                                            this.config.originIdentifier,
-                                            5
-                                        ]
-                                    ]
-                                ],
-                                [ [] ],
-                                this.config.outboundTimes?.departure.concat(this.config.outboundTimes.arrival) ,
-                                this.config.stops ?? Stops.ANY, 
-                                [
-                                    ...(this.config.alliances ?? []),
-                                    ...(this.config.airlines ?? []),
-                                ], 
-                                [],
-                                this.config.outboundDate,
-                                this.config.duration && [ this.config.duration ], 
-                                [], [], [], null, null, [], 3
-                            ],
-                            ...(this.config.roundtrip ? [
-                                [
-                                    [ [] ], 
-                                    [
-                                        [
-                                            [
-                                                this.config.destinationIdentifier ?? this.config.originIdentifier,
-                                                5
-                                            ]
-                                        ]
-                                    ],
-                                    this.config.returnTimes?.departure.concat(this.config.returnTimes.arrival),
-                                    this.config.stops ?? Stops.ANY, 
-                                    [
-                                        ...(this.config.alliances ?? []),
-                                        ...(this.config.airlines ?? []),
-                                    ], 
-                                    [],
-                                    this.config.returnDate,
-                                    this.config.duration && [ this.config.duration ],
-                                    [], [], [], null, null, [], 3
-                                ]
-                            ] : [])
-                        ],
-                        null, null, null, this.config.outboundDate ? 1 : 0, null, null, null, null, null, [], 1, 1
-                    ], 
-                    null, 1, null, 0, null, 0, [ 1, 1 ]
-                ])
-            ])
-        });
-
-        // console.log(body.get('f.req'))
         
         const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetExploreDestinations', {
-            method: 'POST', body
+            method: 'POST', body: this.generatePayload('explore')
         }).then(GoogleFlightsAPI.parseResult);
     
         const cityInfo = JSON.parse(data[0][2]);
@@ -216,7 +239,7 @@ export default class GoogleFlightsAPI {
         return cities.filter(city => city.flight?.length > 0);
     }
 
-    async search(legs?: FlightLeg[]): Promise<FlightSearchResult> {
+    async search(flight?: FlightResult): Promise<FlightSearchResult> {
         if (!this.config.originIdentifier)
             throw new Error('Outbound identifier required');
 
@@ -230,90 +253,10 @@ export default class GoogleFlightsAPI {
             if (!this.config.returnDate || !this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/))
                 throw new Error('Return date absent or malformed (YYYY-MM-DD)');
         }
-
-        const body = new URLSearchParams({
-            'f.req': JSON.stringify([
-                null, JSON.stringify([
-                    [],
-                    [
-                        null, null,
-                        this.config.roundtrip ? 1 : 2, 
-                        null, [], 
-                        this.config.seatClass, 
-                        [
-                            this.config.passengers.adults ?? 1,
-                            this.config.passengers.children ?? 0,
-                            this.config.passengers.infantsOnLap ?? 0,
-                            this.config.passengers.infantsInSeat ?? 0
-                        ], 
-                        this.config.maxPrice && [
-                            null, this.config.maxPrice
-                        ], 
-                        null, null, null, null, null,
-                        [
-                            [
-                                [
-                                    [
-                                        [ this.config.originIdentifier, 5 ]
-                                    ]
-                                ],
-                                [
-                                    [
-                                        [ this.config.destinationIdentifier, 5 ]
-                                    ]
-                                ],
-                                null,
-                                this.config.stops ?? Stops.ANY, 
-                                [
-                                    ...(this.config.alliances ?? []),
-                                    ...(this.config.airlines ?? []),
-                                ], 
-                                [], 
-                                this.config.outboundDate, 
-                                this.config.duration && [ this.config.duration ], 
-                                legs ? legs.map(leg => [
-                                    leg.departure.airport.code, transformDate(leg.departure.date),
-                                    leg.arrival.airport.code, null, 
-                                    leg.flightNumber.code, leg.flightNumber.number
-                                ]) : [],
-                                [], [], null, null, [], 3
-                            ],
-                            ...(this.config.roundtrip ? [
-                                [
-                                    [
-                                        [
-                                            [ this.config.destinationIdentifier, 5 ]
-                                        ]
-                                    ],
-                                    [
-                                        [
-                                            [ this.config.originIdentifier, 5 ]
-                                        ]
-                                    ],
-                                    null, 
-                                    this.config.stops ?? Stops.ANY, 
-                                    [
-                                        ...(this.config.alliances ?? []),
-                                        ...(this.config.airlines ?? []),
-                                    ], 
-                                    [], 
-                                    this.config.returnDate, 
-                                    this.config.duration && [ this.config.duration ], 
-                                    [],
-                                    [], [], null, null, [], 3
-                                ]
-                            ] : [])
-                        ], null, null, null, 1, null, null, null, null, null, []
-                    ], 1, 0, 0
-                ])
-            ])
-        });
-
-        // console.log(body.get('f.req'))
         
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetShoppingResults', 
-            { method: 'POST', body }
+            { method: 'POST', body: this.generatePayload('search', flight && [ flight ]) }
         ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
 
         if (!data[2] && !data[3])
@@ -432,94 +375,9 @@ export default class GoogleFlightsAPI {
     }
 
     async book(flights: FlightResult[]): Promise<BookingResult> {
-        const body = new URLSearchParams({
-            'f.req': JSON.stringify([
-                null, JSON.stringify([
-                    [], 
-                    [
-                        null, null, 
-                        this.config.roundtrip ? 1 : 2, 
-                        null, [], 
-                        this.config.seatClass, 
-                        [
-                            this.config.passengers.adults ?? 1,
-                            this.config.passengers.children ?? 0,
-                            this.config.passengers.infantsOnLap ?? 0,
-                            this.config.passengers.infantsInSeat ?? 0
-                        ], 
-                        this.config.maxPrice && [
-                            null, this.config.maxPrice
-                        ], 
-                        null, null, null, null, null, 
-                        [
-                            [
-                                [
-                                    [
-                                        [ this.config.originIdentifier, 5 ]
-                                    ]
-                                ],
-                                [
-                                    [
-                                        [ this.config.destinationIdentifier, 5 ]
-                                    ]
-                                ],
-                                null, 
-                                this.config.stops ?? Stops.ANY, 
-                                [
-                                    ...(this.config.alliances ?? []),
-                                    ...(this.config.airlines ?? []),
-                                ], 
-                                [], 
-                                this.config.outboundDate,
-                                null,
-                                flights[0].legs.map(leg => [
-                                    leg.departure.airport.code, transformDate(leg.departure.date),
-                                    leg.arrival.airport.code, null, 
-                                    leg.flightNumber.code, leg.flightNumber.number
-                                ]),
-                                [], [], null, null, [], 3
-                            ],
-                            ...(this.config.roundtrip ? [
-                                [
-                                    [
-                                        [
-                                            [ this.config.destinationIdentifier, 5 ]
-                                        ]
-                                    ],
-                                    [
-                                        [
-                                            [ this.config.originIdentifier, 5 ]
-                                        ]
-                                    ],
-                                    null, 
-                                    this.config.stops ?? Stops.ANY, 
-                                    [
-                                        ...(this.config.alliances ?? []),
-                                        ...(this.config.airlines ?? []),
-                                    ], 
-                                    [], 
-                                    this.config.returnDate, 
-                                    null,
-                                    flights[1].legs.map(leg => [
-                                        leg.departure.airport.code, transformDate(leg.departure.date),
-                                        leg.arrival.airport.code, null, 
-                                        leg.flightNumber.code, leg.flightNumber.number
-                                    ]),
-                                    [], [], null, null, [], 3
-                                ]
-                            ] : [])
-                        ],
-                        null, null, null, 1, null, null, null, null, null, []
-                    ]
-                ])
-            ])
-        });
-
-        // console.log(body.get('f.req'))
-        
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetBookingResults', 
-            { method: 'POST', body }
+            { method: 'POST', body: this.generatePayload('booking', flights) }
         ).then(GoogleFlightsAPI.parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1] : null);
 
         if (!data[0])
