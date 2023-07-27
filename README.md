@@ -1,8 +1,9 @@
 # Google Flights API
 
-Google Flights API is an unofficial NodeJS class that allows you to make calls to Google's public backend for flight aggregation data. This project is unaffiliated with Google, and they reserve all rights to their code, which I do not use here.
+Google Flights API is an unofficial NodeJS class that allows you to make calls to Google's public backend for flight aggregation data. This project is unaffiliated with Google, and they reserve all rights to their data.
 
-## Current Implementations
+## ~~Current~~ Outdated Implementations
+This code is being actively worked on, so the following implementations are no longer correct.
 
 ### Create new instance of Google Flights API
 
