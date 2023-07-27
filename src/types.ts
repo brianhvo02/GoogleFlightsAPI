@@ -39,16 +39,6 @@ export interface GoogleFlightsConfig {
     maxPrice?: number;
     alliances?: AirlineAlliance[];
     airlines?: string[];
-    booking?: {
-        departureDate: string;
-        departureAirport: string;
-        arrivalDate: string;
-        arrivalAirport: string;
-        flightNumber: {
-            code: string;
-            number: string;
-        }
-    }
 }
 
 interface RequestTimes {
@@ -162,5 +152,5 @@ export interface Flight {
     airline: string;
     airlineLogoUrl: string;
     arrivalAirport: string;
-    arrivalAirportIdentifier: string;
+    departureAirportIdentifier: string;
 }

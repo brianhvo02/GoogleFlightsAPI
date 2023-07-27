@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult } from "./types.js";
+import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Stops } from "./types.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;
@@ -133,8 +133,11 @@ export default class GoogleFlightsAPI {
                                 ]]],
                                 [ [] ],
                                 this.config.outboundTimes?.departure.concat(this.config.outboundTimes.arrival) ,
-                                this.config.stops, 
-                                this.config.alliances, 
+                                this.config.stops ?? Stops.ANY, 
+                                [
+                                    ...(this.config.alliances ?? []),
+                                    ...(this.config.airlines ?? []),
+                                ], 
                                 [],
                                 this.config.outboundDate,
                                 this.config.duration && [ this.config.duration ], 
@@ -148,8 +151,11 @@ export default class GoogleFlightsAPI {
                                         4
                                     ]]],
                                     this.config.returnTimes?.departure.concat(this.config.returnTimes.arrival),
-                                    this.config.stops, 
-                                    this.config.alliances, 
+                                    this.config.stops ?? Stops.ANY, 
+                                    [
+                                        ...(this.config.alliances ?? []),
+                                        ...(this.config.airlines ?? []),
+                                    ], 
                                     [],
                                     this.config.returnDate,
                                     this.config.duration && [ this.config.duration ],
@@ -183,7 +189,7 @@ export default class GoogleFlightsAPI {
                 airline: listing[6][1] || 'N/A',
                 airlineLogoUrl: `https://www.gstatic.com/flights/airline_logos/70px/dark/${listing[6][0]}.png`,
                 arrivalAirport: listing[6][5] || 'N/A',
-                arrivalAirportIdentifier: listing[6][6] || 'N/A'
+                departureAirportIdentifier: listing[6][6] || 'N/A'
             }
         }), {});
     
@@ -200,7 +206,7 @@ export default class GoogleFlightsAPI {
         return cities.filter(city => city.flight?.length > 0);
     }
 
-    async search(leg?: FlightLeg): Promise<FlightSearchResult[]> {
+    async search(legs?: FlightLeg[]): Promise<FlightSearchResult[]> {
         if (!this.config.originIdentifier)
             throw new Error('Outbound identifier required');
 
@@ -214,26 +220,6 @@ export default class GoogleFlightsAPI {
             if (!this.config.returnDate || !this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/))
                 throw new Error('Return date absent or malformed (YYYY-MM-DD)');
         }
-
-        // [
-        //     [
-        //         null,"CjRIdzdSdHNaVkpkWWNBRFhVR1FCRy0tLS0tLS0tcGZiYnEyNUFBQUFBR1RBNEM0QmxIX0NBEgZVQTExNDAaCgioUBACGgNVU0Q4HXCoUA==",
-        //         null,
-        //         null
-        //     ],
-        //     [
-        //         null, null,
-        //         1,
-        //         null,[],
-        //         1,
-        //         [1,0,0,0],
-        //         null,null,null,null,null,null,
-        //         [[[[["/m/0d6lp",4]]],[[["/m/030qb3t",4]]],null,0,[],[],"2023-08-21",null,
-        //         [
-        //             [
-        //                 "SFO", "2023-08-21", "LAX", null, "UA", "1140"
-        //             ]
-        //         ],[],[],null,null,[],3],[[[[\"/m/030qb3t\",4]]],[[[\"/m/0d6lp\",4]]],null,0,[],[],\"2023-08-25\",null,[],[],[],null,null,[],3]],null,null,null,1,null,null,null,null,null,[]],1,0,0]
 
         const body = new URLSearchParams({
             'f.req': JSON.stringify([
@@ -255,55 +241,75 @@ export default class GoogleFlightsAPI {
                             [
                                 [
                                     [
-                                        [ this.config.originIdentifier, 4 ]
+                                        [ this.config.originIdentifier, 5 ]
                                     ]
                                 ],
                                 [
                                     [
-                                        [ this.config.destinationIdentifier, 4 ]
+                                        [ this.config.destinationIdentifier, 5 ]
                                     ]
                                 ],
-                                null, 0, [], [], this.config.outboundDate, null, 
-                                leg ? [
-                                    [
-                                        leg.departure.airport.code, transformDate(leg.departure.date),
-                                        leg.arrival.airport.code, null, 
-                                        leg.flightNumber.code, leg.flightNumber.number
-                                    ]
-                                ] : [],
+                                null,
+                                this.config.stops ?? Stops.ANY, 
+                                [
+                                    ...(this.config.alliances ?? []),
+                                    ...(this.config.airlines ?? []),
+                                ], 
+                                [], 
+                                this.config.outboundDate, 
+                                null, 
+                                legs ? legs.map(leg => [
+                                    leg.departure.airport.code, transformDate(leg.departure.date),
+                                    leg.arrival.airport.code, null, 
+                                    leg.flightNumber.code, leg.flightNumber.number
+                                ]) : [],
                                 [], [], null, null, []
                             ],
                             ...(this.config.roundtrip ? [
                                 [
                                     [
                                         [
-                                            [ this.config.destinationIdentifier, 4 ]
+                                            [ this.config.destinationIdentifier, 5 ]
                                         ]
                                     ],
                                     [
                                         [
-                                            [ this.config.originIdentifier, 4 ]
+                                            [ this.config.originIdentifier, 5 ]
                                         ]
                                     ],
-                                    null, 0, [], [], this.config.returnDate, null, 
+                                    null, 
+                                    this.config.stops ?? Stops.ANY, 
+                                    [
+                                        ...(this.config.alliances ?? []),
+                                        ...(this.config.airlines ?? []),
+                                    ], 
+                                    [], 
+                                    this.config.returnDate, 
+                                    null, 
                                     [],
-                                    [], [], null, null, [], 1
+                                    [], [], null, null, []
                                 ]
                             ] : [])
                         ], null, null, null, 1, null, null, null, null, null, []
                     ], 1, 0, 0
                 ])
             ])
-        })
+        });
+
+        // console.log(body.get('f.req'))
         
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetShoppingResults', 
-            { method: 'POST', body}
+            { method: 'POST', body }
         ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
+
+        if (!data[2])
+            return [];
+
+        // console.log(data[2][0])
     
         const bestFlights = data[2][0];
         const otherFlights = data[3][0];
-        // console.dir(bestFlights[0], { depth: Infinity })
         
         const getFlightInfo = (f: any) => ({
             airlineCode: f[0][0],
@@ -424,44 +430,57 @@ export default class GoogleFlightsAPI {
                             [
                                 [
                                     [
-                                        [ this.config.originIdentifier, 4 ]
+                                        [ this.config.originIdentifier, 5 ]
                                     ]
                                 ],
                                 [
                                     [
-                                        [ this.config.destinationIdentifier, 4 ]
+                                        [ this.config.destinationIdentifier, 5 ]
                                     ]
                                 ],
-                                null, 0, [], [], this.config.outboundDate, null,
+                                null, 
+                                this.config.stops ?? Stops.ANY, 
                                 [
-                                    [
-                                        flights[0].legs[0].departure.airport.code, transformDate(flights[0].legs[0].departure.date),
-                                        flights[0].legs[0].arrival.airport.code, null, 
-                                        flights[0].legs[0].flightNumber.code, flights[0].legs[0].flightNumber.number
-                                    ]
-                                ],
+                                    ...(this.config.alliances ?? []),
+                                    ...(this.config.airlines ?? []),
+                                ], 
+                                [], 
+                                this.config.outboundDate,
+                                null,
+                                flights[0].legs.map(leg => [
+                                    leg.departure.airport.code, transformDate(leg.departure.date),
+                                    leg.arrival.airport.code, null, 
+                                    leg.flightNumber.code, leg.flightNumber.number
+                                ]),
+                                // [],
                                 [], [], null, null, [], 3
                             ],
                             ...(this.config.roundtrip ? [
                                 [
                                     [
                                         [
-                                            [ this.config.destinationIdentifier, 4 ]
+                                            [ this.config.destinationIdentifier, 5 ]
                                         ]
                                     ],
                                     [
                                         [
-                                            [ this.config.originIdentifier, 4 ]
+                                            [ this.config.originIdentifier, 5 ]
                                         ]
                                     ],
-                                    null, 0, [], [], this.config.returnDate, null,
+                                    null, 
+                                    this.config.stops ?? Stops.ANY, 
                                     [
-                                        [
-                                            flights[1].legs[0].departure.airport.code, transformDate(flights[1].legs[0].departure.date),
-                                            flights[1].legs[0].arrival.airport.code, null, 
-                                            flights[1].legs[0].flightNumber.code, flights[1].legs[0].flightNumber.number
-                                        ]
-                                    ],
+                                        ...(this.config.alliances ?? []),
+                                        ...(this.config.airlines ?? []),
+                                    ], 
+                                    [], 
+                                    this.config.returnDate, 
+                                    null,
+                                    flights[1].legs.map(leg => [
+                                        leg.departure.airport.code, transformDate(leg.departure.date),
+                                        leg.arrival.airport.code, null, 
+                                        leg.flightNumber.code, leg.flightNumber.number
+                                    ]),
                                     [], [], null, null, [], 3
                                 ]
                             ] : [])
@@ -471,11 +490,16 @@ export default class GoogleFlightsAPI {
                 ])
             ])
         });
+
+        // console.log(body.get('f.req'))
         
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetBookingResults', 
             { method: 'POST', body }
-        ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[1][2])[1][0]);
+        ).then(GoogleFlightsAPI.parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1][0] : null);
+
+        if (!data)
+            return [];
     
         return data.filter((datum: any) => datum[0] === 0).map((datum: any) => ({
             vendor: datum[1][0][1],

@@ -10,7 +10,7 @@ Google Flights API is an unofficial NodeJS class that allows you to make calls t
 const gfAPI = new GoogleFlightsAPI({
     originIdentifier: '/m/0d6lp',           // Google's id for San Francisco
     outboundDate: '2023-08-21',             // Date of departing flight in YYYY-MM-DD
-    destinationIdentifier: '/m/030qb3t'     // Google's id for Los Angeles
+    destinationIdentifier: '/m/030qb3t',    // Google's id for Los Angeles
     returnDate: '2023-08-25',               // Date of return flight in YYYY-MM-DD
     roundtrip: true,                        // Roundtrip vs one-way flight search
     seatClass: SeatClass.ECONOMY,           // Class of seat, in this case Economy class
