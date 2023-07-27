@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Stops } from "./types.js";
+import { BookingInfo, Flight, FlightDiscoverResult, FlightLeg, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame } from "./types.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;
@@ -25,31 +25,26 @@ export default class GoogleFlightsAPI {
     }
 
     static async locationSearch(search: string): Promise<LocationSearchResult> {
-        const innerQuery = [
-            search,
-            [ 1, 2, 3, 5 ],
-            null, [ 2 ], 2
-        ];
-    
-        const query = [
-            [
-                [
-                    'H028ib',
-                    JSON.stringify(innerQuery),
-                    null,
-                    'generic'
-                ]
-            ]
-        ];
-    
         const body = new URLSearchParams({
-            'f.req': JSON.stringify(query)
+            'f.req': JSON.stringify([
+                [
+                    [
+                        'H028ib',
+                        JSON.stringify([
+                            search,
+                            [ 1, 2, 3, 5 ],
+                            null, [ 2 ], 2
+                        ]),
+                        null,
+                        'generic'
+                    ]
+                ]
+            ])
         });
         
-        const json = await fetch('https://www.google.com/_/TravelFrontendUi/data/batchexecute', {
+        const results = await fetch('https://www.google.com/_/TravelFrontendUi/data/batchexecute', {
             method: 'POST', body
-        }).then(this.parseResult);
-        const results = JSON.parse(json[0][2])[0];
+        }).then(this.parseResult).then(res => JSON.parse(res[0][2])[0]);
     
         return results.map(([info, airportInfo]: any) => {
             if (info[0] === 1) {
@@ -84,36 +79,40 @@ export default class GoogleFlightsAPI {
     }
 
     async explore() {
-        // TODO: Implement no dates
-
-        if (this.config.roundtrip) {
-            if (
-                !((this.config.outboundDate && this.config.returnDate) 
-                    || 
-                (!this.config.outboundDate && !this.config.returnDate))
-            ) throw new Error('Outbound or return date absent');
-    
-            if (
-                (this.config.outboundDate && this.config.returnDate) 
-                    &&
+        const exploreTime = this.config.exploreMonth !== undefined 
+            && (this.config.exploreTimeFrame !== undefined || !this.config.roundtrip);
+        const datesExist = this.config.outboundDate 
+            && this.config.outboundDate.match(/^\d{4}-\d{2}-\d{2}$/) 
+            && (
                 (
-                    !this.config.outboundDate.match(/^\d{4}-\d{2}-\d{2}$/)
-                        || 
-                    !this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/)
-                )
-            ) throw new Error('Outbound or return date malformed (YYYY-MM-DD)');
-        } else {
-            if (this.config.outboundDate && !this.config.outboundDate.match(/^\d{4}-\d{2}-\d{2}$/))
-                throw new Error('Outbound date malformed (YYYY-MM-DD)');
-        }
+                    this.config.returnDate && this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/) 
+                ) || !this.config.roundtrip
+            );
+        
+        if (!exploreTime && !datesExist)
+            throw new Error('Invalid config for explore');
 
         const body = new URLSearchParams({
             'f.req': JSON.stringify([
                 null,
                 JSON.stringify([
-                    [], null, null, 
+                    [], this.config.bounds, null, 
                     [
-                        null, null, this.config.roundtrip ? 1 : 2, null, [],
+                        null, null, 
+                        this.config.roundtrip ? 1 : 2, 
+                        null, 
+                        (
+                            this.config.exploreMonth !== undefined 
+                                && 
+                            (this.config.exploreTimeFrame !== undefined || this.config.roundtrip)
+                                &&
+                            this.config.exploreMonth === Month.ALL 
+                                && 
+                            (this.config.exploreTimeFrame === TimeFrame.ONE_WEEK || this.config.roundtrip)
+                        ) ? [
+                            this.config.exploreMonth, 
+                            ...(this.config.roundtrip ? [this.config.exploreTimeFrame] : [])
+                        ] : [],
                         this.config.seatClass, 
                         [
                             this.config.passengers?.adults ?? 1,
@@ -127,10 +126,14 @@ export default class GoogleFlightsAPI {
                         null, null, null, null, null,
                         [
                             [
-                                [[[
-                                    this.config.originIdentifier,
-                                    4
-                                ]]],
+                                [
+                                    [
+                                        [
+                                            this.config.originIdentifier,
+                                            5
+                                        ]
+                                    ]
+                                ],
                                 [ [] ],
                                 this.config.outboundTimes?.departure.concat(this.config.outboundTimes.arrival) ,
                                 this.config.stops ?? Stops.ANY, 
@@ -146,10 +149,14 @@ export default class GoogleFlightsAPI {
                             ...(this.config.roundtrip ? [
                                 [
                                     [ [] ], 
-                                    [[[
-                                        this.config.destinationIdentifier ?? this.config.originIdentifier,
-                                        4
-                                    ]]],
+                                    [
+                                        [
+                                            [
+                                                this.config.destinationIdentifier ?? this.config.originIdentifier,
+                                                5
+                                            ]
+                                        ]
+                                    ],
                                     this.config.returnTimes?.departure.concat(this.config.returnTimes.arrival),
                                     this.config.stops ?? Stops.ANY, 
                                     [
@@ -163,13 +170,14 @@ export default class GoogleFlightsAPI {
                                 ]
                             ] : [])
                         ],
-                        null, null, null, 1, null, null, null, null, null, [], 1, 1
+                        null, null, null, this.config.outboundDate ? 1 : 0, null, null, null, null, null, [], 1, 1
                     ], 
-                    null, 1, null, 0, null, 0, [ 1088 , 1256 ]
-                    //1241.3333740234375
+                    null, 1, null, 0, null, 0, [ 1, 1 ]
                 ])
             ])
         });
+
+        // console.log(body.get('f.req'))
         
         const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetExploreDestinations', {
             method: 'POST', body
@@ -200,6 +208,8 @@ export default class GoogleFlightsAPI {
             country: info[4],
             listingPictureUrl: info[3],
             coverPictureUrl: info[7],
+            outboundDate: info[11],
+            returnDate: info[12],
             flight: flights[info[0]]
         }));
 
@@ -263,7 +273,7 @@ export default class GoogleFlightsAPI {
                                     leg.arrival.airport.code, null, 
                                     leg.flightNumber.code, leg.flightNumber.number
                                 ]) : [],
-                                [], [], null, null, []
+                                [], [], null, null, [], 3
                             ],
                             ...(this.config.roundtrip ? [
                                 [
@@ -287,7 +297,7 @@ export default class GoogleFlightsAPI {
                                     this.config.returnDate, 
                                     null, 
                                     [],
-                                    [], [], null, null, []
+                                    [], [], null, null, [], 3
                                 ]
                             ] : [])
                         ], null, null, null, 1, null, null, null, null, null, []
@@ -303,13 +313,11 @@ export default class GoogleFlightsAPI {
             { method: 'POST', body }
         ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
 
-        if (!data[2])
+        if (!data[2] && !data[3])
             return [];
-
-        // console.log(data[2][0])
     
-        const bestFlights = data[2][0];
-        const otherFlights = data[3][0];
+        const bestFlights = data[2]?.[0] ?? [];
+        const otherFlights = data[3]?.[0] ?? [];
         
         const getFlightInfo = (f: any) => ({
             airlineCode: f[0][0],
@@ -452,7 +460,6 @@ export default class GoogleFlightsAPI {
                                     leg.arrival.airport.code, null, 
                                     leg.flightNumber.code, leg.flightNumber.number
                                 ]),
-                                // [],
                                 [], [], null, null, [], 3
                             ],
                             ...(this.config.roundtrip ? [
@@ -500,19 +507,22 @@ export default class GoogleFlightsAPI {
 
         if (!data)
             return [];
-    
-        return data.filter((datum: any) => datum[0] === 0).map((datum: any) => ({
+
+        const extractBookingData = (datum: any) => ({
             vendor: datum[1][0][1],
             vendorCode: datum[1][0][0],
-            vendorHomepage: datum[5][0],
-            link: datum[5][2][0],
-            linkData: datum[5][2][1],
-            price: datum[7][0][1],
-            fareType: datum[14][0][0][1][1] ?? null
-        }));
+            vendorHomepage: datum[5]?.[0],
+            link: datum[5]?.[2][0],
+            linkData: datum[5]?.[2][1],
+            price: datum[7]?.[0][1],
+            fareType: datum[14]?.[0][0][1]?.[1] ?? null,
+            separateBookings: datum[2]?.map(extractBookingData)
+        });
+    
+        return data.filter((datum: any) => datum[0] === 0 || datum[0] === 5).map(extractBookingData);
     }
 
-    static getBookingLink = async ({ link, linkData }: BookingInfo) => 
+    static getBookingLink = async (link: string, linkData: [ [ string, string ] ]) => 
         fetch(link, { method: 'POST', body: new URLSearchParams(linkData) })
             .then(res => res.text())
             .then(str => str.slice(str.indexOf('\'') + 1, str.lastIndexOf('\'')).replaceAll('&amp;', '&'));

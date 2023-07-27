@@ -26,6 +26,8 @@ export interface GoogleFlightsConfig {
     destinationIdentifier?: string;
     returnDate?: string;
     returnTimes?: RequestTimes;
+    exploreMonth?: Month;
+    exploreTimeFrame?: TimeFrame;
     stops?: Stops;
     duration?: number;
     roundtrip: boolean;
@@ -39,11 +41,34 @@ export interface GoogleFlightsConfig {
     maxPrice?: number;
     alliances?: AirlineAlliance[];
     airlines?: string[];
+    bounds?: [[number, number], [number, number]];
 }
 
 interface RequestTimes {
     departure: [number, number],
     arrival: [number, number]
+}
+
+export enum TimeFrame {
+    WEEKEND = 0,
+    ONE_WEEK = 2,
+    TWO_WEEKS = 3
+}
+
+export enum Month {
+    ALL,
+    JANUARY,
+    FEBRUARY,
+    MARCH,
+    APRIL,
+    MAY,
+    JUNE,
+    JULY,
+    AUGUST,
+    SEPTEMBER,
+    OCTOBER,
+    NOVEMBER,
+    DECEMBER
 }
 
 export enum Stops {
@@ -54,27 +79,23 @@ export enum Stops {
 }
 
 export enum SeatClass {
-    INVALID,
-    ECONOMY,
-    PREMIUM_ECONOMY,
-    BUSINESS,
-    FIRST
+    ECONOMY = 1,
+    PREMIUM_ECONOMY = 2,
+    BUSINESS = 3,
+    FIRST = 4
 }
 
-export enum AirlineAlliance {
-    STAR_ALLIANCE = 'STAR_ALLIANCE',
-    SKYTEAM = 'SKYTEAM',
-    ONEWORLD = 'ONEWORLD'
-}
+export type AirlineAlliance = 'STAR_ALLIANCE' | 'SKYTEAM' | 'ONEWORLD';
 
 export interface BookingInfo {
     vendor: string;
     vendorCode: string;
     vendorHomepage: string;
-    link: string;
-    linkData: string;
+    link?: string;
+    linkData?: [ [ string, string ] ];
     price: number;
     fareType: string | null;
+    separateBookings?: BookingInfo[];
 }
 
 export interface FlightSearchResult {
@@ -140,6 +161,8 @@ export interface FlightDiscoverResult {
     country: string;
     listingPictureUrl: string;
     coverPictureUrl: string;
+    outboundDate: string;
+    returnDate: string;
     flight: Flight;
 }
 
