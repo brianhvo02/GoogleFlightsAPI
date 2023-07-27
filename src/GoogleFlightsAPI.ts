@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { BookingInfo, BookingResult, CalendarDate, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types.js";
+import { BookingInfo, BookingResult, CalendarDate, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types/flights.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;
@@ -230,7 +230,7 @@ export default class GoogleFlightsAPI {
                 )
             )
         ) throw new Error('Calendar return date range absent or malformed (YYYY-mm-dd)');
-        
+
         const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetCalendarGrid', {
             method: 'POST', body: this.generatePayload('calendar')
         }).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));

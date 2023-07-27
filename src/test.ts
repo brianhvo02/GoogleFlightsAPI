@@ -1,6 +1,5 @@
-import GoogleFlightsAPI, { AirlineAlliance, GoogleFlightsConfig } from "./index.js";
-import { SeatClass, Stops } from "./index.js";
-import { Month, TimeFrame } from "./types.js";
+import { GoogleFlightsAPI } from "./index.js";
+import { AirlineAlliance, GoogleFlightsConfig, SeatClass, Stops, Month, TimeFrame } from "./types/flights.js";
 
 (async () => {
     const [ locationDep ] = await GoogleFlightsAPI.locationSearch('San Jose');
@@ -75,6 +74,9 @@ import { Month, TimeFrame } from "./types.js";
         }
     });
 
+    const paradiseDates = await api.calendar();
+    console.table(paradiseDates)
+
     const { flights: [result], trendData: td1 } = await api.search();
     console.log(`Found ${result.airlines.join(', ')} flight from ${result.departure.airport.code} to ${result.arrival.airport.code} for $${result.price}`);
 
@@ -89,9 +91,6 @@ import { Month, TimeFrame } from "./types.js";
         const bookingLink = await GoogleFlightsAPI.getBookingLink(paradiseBookingInfo.link, paradiseBookingInfo.linkData);
         console.log(bookingLink);
     }
-
-    const paradiseDates = await api.calendar();
-    console.table(paradiseDates)
 
     // console.table(td1?.trends.map(t => [new Date(t[0]).toLocaleDateString(), t[1]]))
 })();

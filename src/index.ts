@@ -1,13 +1,7 @@
 import GoogleFlightsAPI from "./GoogleFlightsAPI.js";
-import { 
-    GoogleFlightsConfig, LocationSearchResult, 
-    FlightSearchResult, FlightDiscoverResult, BookingInfo,
-    Stops, SeatClass, AirlineAlliance 
-} from "./types.js";
+import { TimeFrame, Month, Stops, SeatClass } from "./types/flights.js";
 
-export default GoogleFlightsAPI;
-export { 
-    GoogleFlightsConfig, LocationSearchResult, 
-    FlightSearchResult, FlightDiscoverResult, BookingInfo,
-    Stops, SeatClass, AirlineAlliance 
-};
+export {
+    GoogleFlightsAPI,
+    TimeFrame, Month, Stops, SeatClass
+}
