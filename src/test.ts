@@ -27,6 +27,10 @@ import { Month, TimeFrame } from "./types.js";
         // airlines: ['AS'],
         // duration: 4 * 60,
         // maxPrice: 100,
+        calendar: {
+            outboundDateRange: ['2023-08-18', '2023-08-24'],
+            returnDateRange: ['2023-08-22', '2023-08-28']
+        },
     }
 
     console.log(`Looking for somewhere to go ${params.outboundDate ? `from ${params.outboundDate} to ${params.returnDate}`: ''}`);
@@ -40,6 +44,9 @@ import { Month, TimeFrame } from "./types.js";
         outboundDate: discoverResult.outboundDate,
         returnDate: discoverResult.returnDate
     });
+
+    const dates = await api.calendar();
+    console.table(dates)
 
     const { flights: [originResult] } = await api.search();
     console.log(`Found ${originResult.airlines[0]} flight from ${originResult.departure.airport.code} to ${originResult.arrival.airport.code}`);
@@ -62,7 +69,10 @@ import { Month, TimeFrame } from "./types.js";
     console.log(`New search! Going to ${locationArr.type === 'city' ? locationArr.shortName : locationArr.city}.`);
     api.editConfig({
         destinationIdentifier: locationArr.identifier,
-        roundtrip: false
+        roundtrip: false,
+        calendar: {
+            outboundDateRange: ['2023-08-01', '2023-08-31']
+        }
     });
 
     const { flights: [result], trendData: td1 } = await api.search();
@@ -79,5 +89,9 @@ import { Month, TimeFrame } from "./types.js";
         const bookingLink = await GoogleFlightsAPI.getBookingLink(paradiseBookingInfo.link, paradiseBookingInfo.linkData);
         console.log(bookingLink);
     }
+
+    const paradiseDates = await api.calendar();
+    console.table(paradiseDates)
+
     // console.table(td1?.trends.map(t => [new Date(t[0]).toLocaleDateString(), t[1]]))
 })();

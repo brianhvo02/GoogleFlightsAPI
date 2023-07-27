@@ -28,6 +28,10 @@ export interface GoogleFlightsConfig {
     returnTimes?: RequestTimes;
     exploreMonth?: Month;
     exploreTimeFrame?: TimeFrame;
+    calendar?: {
+        outboundDateRange: [string, string],
+        returnDateRange?: [string, string]
+    }
     stops?: Stops;
     duration?: number;
     roundtrip: boolean;
@@ -86,6 +90,12 @@ export enum SeatClass {
 }
 
 export type AirlineAlliance = 'STAR_ALLIANCE' | 'SKYTEAM' | 'ONEWORLD';
+
+export interface CalendarDate {
+    outboundDate: string;
+    arrivalDate: string | null;
+    price: number;
+}
 
 export interface BookingResult {
     bookings: BookingInfo[];

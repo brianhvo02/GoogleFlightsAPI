@@ -1,11 +1,14 @@
 import _ from "lodash";
-import { BookingInfo, BookingResult, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types.js";
+import { BookingInfo, BookingResult, CalendarDate, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types.js";
 
 const transformDate = ({ year, month, day }: {
     year: number;
     month: number;
     day: number;
 }) => `${year}-${month < 10 ? 0 : ''}${month}-${day < 10 ? 0 : ''}${day}`;
+
+const addTime = (date: string, milliseconds: number) => 
+    new Date(new Date(date).getTime() + milliseconds).toISOString().split('T')[0];
 
 export default class GoogleFlightsAPI {
     private static parseResult = async (res: Response) => res.text()
@@ -78,7 +81,7 @@ export default class GoogleFlightsAPI {
         });
     }
 
-    generatePayload = (type: 'explore' | 'search' | 'booking', flights?: FlightResult[]) => {
+    generatePayload = (type: 'explore' | 'search' | 'booking' | 'calendar', flights?: FlightResult[]) => {
         const payload = [
             null, null, 
             this.config.roundtrip ? 1 : 2, 
@@ -172,21 +175,72 @@ export default class GoogleFlightsAPI {
                     ]
                 ] : [])
             ],
-            null, null, null, this.config.outboundDate ? 1 : 0, null, null, null, null, null, [], 1, 1
+            null, null, null, this.config.outboundDate ? 1 : 0, null, null, null, null, null, []
         ]
         return new URLSearchParams({
             'f.req': JSON.stringify([
                 null,
                 JSON.stringify([
-                    [],
+                    type === 'calendar' ? null : [],
                     type === 'explore'
                         ? this.config.bounds
                         : payload,
-                    ...(type === 'explore' ? [null, payload] : [])
+                    ...(type === 'explore' ? [null, payload] : []),
+                    ...((type === 'calendar' && this.config.calendar) ? [
+                        this.config.calendar.outboundDateRange, ...(
+                            (this.config.roundtrip && this.config.calendar.returnDateRange) 
+                                ? [ this.config.calendar.returnDateRange ] : []
+                        )
+                    ] : [])
                 ])
             ])
         });
     };
+
+    async calendar(): Promise<CalendarDate[]> {
+        if (!this.config.originIdentifier)
+            throw new Error('Outbound identifier required');
+
+        if (!this.config.outboundDate || !this.config.outboundDate.match(/^\d{4}-\d{2}-\d{2}$/))
+            throw new Error('Outbound date absent or malformed (YYYY-mm-dd)');
+
+        if (this.config.roundtrip) {
+            if (!this.config.destinationIdentifier)
+                throw new Error('Return identifier required for roundtrip');
+
+            if (!this.config.returnDate || !this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/))
+                throw new Error('Return date absent or malformed (YYYY-mm-dd)');
+        }
+
+        if (!this.config.calendar)
+            throw new Error('Calendar definition required in config');
+
+        if (
+            !this.config.calendar.outboundDateRange[0].match(/^\d{4}-\d{2}-\d{2}$/) 
+                || 
+            !this.config.calendar.outboundDateRange[1].match(/^\d{4}-\d{2}-\d{2}$/)
+        ) throw new Error('Calendar outbound date range malformed (YYYY-mm-dd)');
+
+        if (
+            this.config.roundtrip && (
+                !this.config.calendar.returnDateRange || (
+                    !this.config.calendar.returnDateRange[0].match(/^\d{4}-\d{2}-\d{2}$/) 
+                        || 
+                    !this.config.calendar.returnDateRange[1].match(/^\d{4}-\d{2}-\d{2}$/)
+                )
+            )
+        ) throw new Error('Calendar return date range absent or malformed (YYYY-mm-dd)');
+        
+        const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetCalendarGrid', {
+            method: 'POST', body: this.generatePayload('calendar')
+        }).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
+
+        return data[1].map((datum: any) => ({
+            outboundDate: datum[0],
+            returnDate: datum[1],
+            price: datum[2][0][1]
+        }))
+    }
 
     async explore() {
         const exploreTime = this.config.exploreMonth !== undefined 
@@ -244,20 +298,22 @@ export default class GoogleFlightsAPI {
             throw new Error('Outbound identifier required');
 
         if (!this.config.outboundDate || !this.config.outboundDate.match(/^\d{4}-\d{2}-\d{2}$/))
-            throw new Error('Outbound date absent or malformed (YYYY-MM-DD)');
+            throw new Error('Outbound date absent or malformed (YYYY-mm-dd)');
 
         if (this.config.roundtrip) {
             if (!this.config.destinationIdentifier)
                 throw new Error('Return identifier required for roundtrip');
 
             if (!this.config.returnDate || !this.config.returnDate.match(/^\d{4}-\d{2}-\d{2}$/))
-                throw new Error('Return date absent or malformed (YYYY-MM-DD)');
+                throw new Error('Return date absent or malformed (YYYY-mm-dd)');
         }
         
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetShoppingResults', 
             { method: 'POST', body: this.generatePayload('search', flight && [ flight ]) }
         ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
+
+        const additionalInfo = data[7];
 
         if (!data[2] && !data[3])
             return { flights: [], trendData: null };
