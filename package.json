@@ -10,7 +10,11 @@
     "start": "npm run build && node dist/test",
     "dev": "nodemon -e ts -w src -x 'npm run start'"
   },
-  "keywords": ["api", "google", "flights"],
+  "keywords": [
+    "api",
+    "google",
+    "flights"
+  ],
   "author": "Brian Vo",
   "license": "GPL-3.0-or-later",
   "repository": "github:brianhvo02/GoogleFlightsAPI",
@@ -22,6 +26,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "lodash": "^4.17.21"
   }
 }

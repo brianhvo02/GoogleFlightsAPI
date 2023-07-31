@@ -1,19 +1,8 @@
 import _ from "lodash";
-import { BookingInfo, BookingResult, CalendarDate, Flight, FlightDiscoverResult, FlightLeg, FlightResult, FlightSearchResult, GoogleFlightsConfig, LocationSearchResult, Month, Stops, TimeFrame, TrendData } from "./types/flights.js";
-
-const transformDate = ({ year, month, day }: {
-    year: number;
-    month: number;
-    day: number;
-}) => `${year}-${month < 10 ? 0 : ''}${month}-${day < 10 ? 0 : ''}${day}`;
-
-const addTime = (date: string, milliseconds: number) => 
-    new Date(new Date(date).getTime() + milliseconds).toISOString().split('T')[0];
+import { BookingResult, CalendarDate, Flight, FlightDiscoverResult, FlightResult, FlightSearchResult, GoogleFlightsConfig, Month, Stops, TimeFrame, TrendData } from "./types/flights.js";
+import { parseResult, transformDate } from "./utils.js";
 
 export default class GoogleFlightsAPI {
-    private static parseResult = async (res: Response) => res.text()
-        .then(text => JSON.parse(text.replace(")]}'\n\n", '')));
-
     private config: GoogleFlightsConfig;
 
     constructor(config: GoogleFlightsConfig) {
@@ -25,60 +14,6 @@ export default class GoogleFlightsAPI {
             ...this.config,
             ...config
         }
-    }
-
-    static async locationSearch(search: string): Promise<LocationSearchResult> {
-        const body = new URLSearchParams({
-            'f.req': JSON.stringify([
-                [
-                    [
-                        'H028ib',
-                        JSON.stringify([
-                            search,
-                            [ 1, 2, 3, 5 ],
-                            null, [ 2 ], 2
-                        ]),
-                        null,
-                        'generic'
-                    ]
-                ]
-            ])
-        });
-        
-        const results = await fetch('https://www.google.com/_/TravelFrontendUi/data/batchexecute', {
-            method: 'POST', body
-        }).then(this.parseResult).then(res => JSON.parse(res[0][2])[0]);
-    
-        return results.map(([info, airportInfo]: any) => {
-            if (info[0] === 1) {
-                const airport = {
-                    type: 'airport',
-                    name: info[1],
-                    city: info[2],
-                    description: info[3],
-                    identifier: info[4],
-                    code: info[5]
-                }
-    
-                return airport;
-            }
-    
-            return {
-                type: 'city',
-                fullName: info[1],
-                shortName: info[2],
-                description: info[3],
-                identifier: info[4],
-                airports: airportInfo?.map(([info, distance]: any) => ({
-                    type: 'airport',
-                    name: info[1],
-                    city: info[2],
-                    identifier: info[4],
-                    code: info[5],
-                    distance
-                })) ?? []
-            }
-        });
     }
 
     generatePayload = (type: 'explore' | 'search' | 'booking' | 'calendar', flights?: FlightResult[]) => {
@@ -233,7 +168,7 @@ export default class GoogleFlightsAPI {
 
         const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetCalendarGrid', {
             method: 'POST', body: this.generatePayload('calendar')
-        }).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
+        }).then(parseResult).then(res => JSON.parse(res[0][2]));
 
         return data[1].map((datum: any) => ({
             outboundDate: datum[0],
@@ -258,7 +193,7 @@ export default class GoogleFlightsAPI {
         
         const data = await fetch('https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetExploreDestinations', {
             method: 'POST', body: this.generatePayload('explore')
-        }).then(GoogleFlightsAPI.parseResult);
+        }).then(parseResult);
     
         const cityInfo = JSON.parse(data[0][2]);
         const flightInfo = JSON.parse(data[1][2]);
@@ -311,7 +246,7 @@ export default class GoogleFlightsAPI {
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetShoppingResults', 
             { method: 'POST', body: this.generatePayload('search', flight && [ flight ]) }
-        ).then(GoogleFlightsAPI.parseResult).then(res => JSON.parse(res[0][2]));
+        ).then(parseResult).then(res => JSON.parse(res[0][2]));
 
         const additionalInfo = data[7];
 
@@ -434,7 +369,7 @@ export default class GoogleFlightsAPI {
         const data = await fetch(
             'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetBookingResults', 
             { method: 'POST', body: this.generatePayload('booking', flights) }
-        ).then(GoogleFlightsAPI.parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1] : null);
+        ).then(parseResult).then(res => res[1][2] ? JSON.parse(res[1][2])[1] : null);
 
         if (!data[0])
             return { bookings: [], trendData: null };
